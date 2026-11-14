@@ -40,11 +40,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate Android Gradle Wrapper & Platform Files
+        run: |
+          flutter create . --platforms=android --org=com.example
+          chmod +x android/gradlew
+          python3 .github/scripts/configure_android.py
+
       - name: Analyze code
         run: flutter analyze --no-fatal-infos || true
 
       - name: Build Release APK
-        run: flutter build apk --release
+        run: flutter build apk --release --verbose
 
       - name: Prepare Release File
         run: |
