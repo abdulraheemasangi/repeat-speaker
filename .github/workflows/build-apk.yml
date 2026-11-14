@@ -37,24 +37,26 @@ jobs:
       - name: Display Flutter version
         run: flutter --version
 
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Generate Android Gradle Wrapper & Platform Files
+      - name: Generate Clean Android Platform & Gradle Wrapper
         run: |
+          rm -rf android
           flutter create . --platforms=android --org=com.example
           chmod +x android/gradlew
           python3 .github/scripts/configure_android.py
+
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Analyze code
         run: flutter analyze --no-fatal-infos || true
 
       - name: Build Release APK
-        run: flutter build apk --release --verbose
+        run: flutter build apk --release
 
       - name: Prepare Release File
         run: |
           cp build/app/outputs/flutter-apk/app-release.apk RepeatSpeaker.apk
+          ls -lh RepeatSpeaker.apk
 
       - name: Upload APK as Workflow Artifact
         uses: actions/upload-artifact@v4
