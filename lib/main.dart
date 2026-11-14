@@ -65,7 +65,6 @@ class _RepeatSpeakerAppState extends State<RepeatSpeakerApp> {
         elevation: 0,
         centerTitle: false,
       ),
-      cardTheme: const CardTheme(color: Color(0xFF161B22)),
     );
 
     // Modern Material 3 Light Theme
@@ -83,7 +82,6 @@ class _RepeatSpeakerAppState extends State<RepeatSpeakerApp> {
         elevation: 0,
         centerTitle: false,
       ),
-      cardTheme: const CardTheme(color: Colors.white),
     );
 
     return MaterialApp(

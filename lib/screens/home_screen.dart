@@ -357,7 +357,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? (isWaiting
                                 ? Colors.amber.withOpacity(0.12)
                                 : Colors.teal.withOpacity(0.12))
-                          : colorScheme.surfaceVariant.withOpacity(0.4),
+                          : colorScheme.surfaceContainerHighest.withOpacity(
+                              0.4,
+                            ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),

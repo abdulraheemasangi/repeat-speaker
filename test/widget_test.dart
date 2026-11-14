@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:repeat_speaker/main.dart';
 import 'package:repeat_speaker/services/tts_controller.dart';

@@ -69,12 +69,16 @@ class VoiceSelectorDialog extends StatelessWidget {
                       name.toLowerCase().contains('google') ||
                       name.toLowerCase().contains('natural');
 
-                  return RadioListTile<String>(
-                    value: "$name|$locale",
-                    groupValue: currentVoice != null
-                        ? "${currentVoice!['name']}|${currentVoice!['locale']}"
-                        : null,
-                    onChanged: (_) {
+                  return ListTile(
+                    leading: Icon(
+                      isSelected
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_off,
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.outline,
+                    ),
+                    onTap: () {
                       onVoiceSelected(voice);
                       Navigator.of(context).pop();
                     },
@@ -119,7 +123,6 @@ class VoiceSelectorDialog extends StatelessWidget {
                         color: colorScheme.outline,
                       ),
                     ),
-                    activeColor: colorScheme.primary,
                   );
                 },
               ),
