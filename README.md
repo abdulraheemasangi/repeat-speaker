@@ -31,12 +31,12 @@ Perfect for:
 
 You do not need to install Android Studio or Flutter on your computer to use Repeat Speaker on your phone. You can download the pre-compiled APK directly from GitHub Releases:
 
-### 🔗 [Download Latest RepeatSpeaker.apk](https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>/releases/latest)
+### 🔗 [Download Latest RepeatSpeaker.apk](https://github.com/abdulraheem-general/repeat-speaker/releases/latest)
 
-> Replace `<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>` with your GitHub repository path.
+> Replace `abdulraheem-general/repeat-speaker` with your GitHub repository path.
 
 ### How to Install on your Android Phone:
-1. Open the [Releases](https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>/releases/latest) page in Chrome on your Android device.
+1. Open the [Releases](https://github.com/abdulraheem-general/repeat-speaker/releases/latest) page in Chrome on your Android device.
 2. Tap **`RepeatSpeaker.apk`** under **Assets** to download it.
 3. Once downloaded, tap the file in your notification bar (or find it in your **Files / Downloads** app).
 4. If Android displays a prompt saying *"For your security, your phone is not allowed to install unknown apps from this source"*:
@@ -104,7 +104,7 @@ When you are ready to publish to Google Play or sign with a custom keystore:
 ### Steps:
 1. Clone the repository:
    ```bash
-   git clone https://github.com/<YOUR_GITHUB_USERNAME>/repeat_speaker.git
+   git clone https://github.com/abdulraheem-general/repeat_speaker.git
    cd repeat_speaker
    ```
 2. Fetch dependencies:
