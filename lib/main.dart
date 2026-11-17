@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'screens/home_screen.dart';
+import 'services/storage_service.dart';
 import 'services/tts_controller.dart';
+import 'theme/liquid_glass_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,8 +31,15 @@ class RepeatSpeakerApp extends StatefulWidget {
 }
 
 class _RepeatSpeakerAppState extends State<RepeatSpeakerApp> {
-  // Dark theme by default as requested
-  ThemeMode _themeMode = ThemeMode.dark;
+  late ThemeMode _themeMode;
+
+  @override
+  void initState() {
+    super.initState();
+    // Restore persistent theme mode (dark by default)
+    final savedMode = StorageService.getThemeMode(defaultMode: 'dark');
+    _themeMode = savedMode == 'light' ? ThemeMode.light : ThemeMode.dark;
+  }
 
   void _toggleTheme() {
     setState(() {
@@ -38,6 +47,9 @@ class _RepeatSpeakerAppState extends State<RepeatSpeakerApp> {
           ? ThemeMode.light
           : ThemeMode.dark;
     });
+    StorageService.saveThemeMode(
+      _themeMode == ThemeMode.dark ? 'dark' : 'light',
+    );
   }
 
   @override
@@ -48,47 +60,11 @@ class _RepeatSpeakerAppState extends State<RepeatSpeakerApp> {
 
   @override
   Widget build(BuildContext context) {
-    const primarySeed = Color(0xFF6366F1); // Indigo / Violet modern seed
-
-    // Modern Material 3 Dark Theme (Default)
-    final ThemeData darkTheme = ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primarySeed,
-        brightness: Brightness.dark,
-        surface: const Color(0xFF161B22),
-      ),
-      scaffoldBackgroundColor: const Color(0xFF0D1117),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF161B22),
-        elevation: 0,
-        centerTitle: false,
-      ),
-    );
-
-    // Modern Material 3 Light Theme
-    final ThemeData lightTheme = ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primarySeed,
-        brightness: Brightness.light,
-        surface: Colors.white,
-      ),
-      scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-      ),
-    );
-
     return MaterialApp(
       title: 'Repeat Speaker',
       debugShowCheckedModeBanner: false,
-      theme: lightTheme,
-      darkTheme: darkTheme,
+      theme: LiquidGlassTheme.getLightTheme(),
+      darkTheme: LiquidGlassTheme.getDarkTheme(),
       themeMode: _themeMode,
       home: HomeScreen(
         ttsController: widget.ttsController,

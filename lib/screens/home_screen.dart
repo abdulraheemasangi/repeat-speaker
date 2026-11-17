@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../services/storage_service.dart';
 import '../services/tts_controller.dart';
-import '../widgets/voice_selector_dialog.dart';
+import '../widgets/about_dialog.dart';
+import '../widgets/app_logo.dart';
+import '../widgets/circular_media_controls.dart';
+import '../widgets/liquid_glass_container.dart';
+import '../widgets/voice_selector_sheet.dart';
+import '../widgets/word_highlight_view.dart';
 
 class HomeScreen extends StatefulWidget {
   final TtsController ttsController;
@@ -21,16 +27,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController _textController = TextEditingController();
+  late final TextEditingController _textController;
   final FocusNode _focusNode = FocusNode();
+  bool _forceEditMode = false;
 
   @override
   void initState() {
     super.initState();
     widget.ttsController.addListener(_onTtsStateChanged);
 
-    // Default friendly sample text for instant user testing
-    _textController.text = "Repeat this sentence to practice pronunciation, memorize key phrases, or study effectively.";
+    // Restore persistent text or provide elegant default sample
+    final initialText = StorageService.getText(
+      defaultText: "Repeat this sentence to master pronunciation, memorize key phrases, and build natural fluency.",
+    );
+    _textController = TextEditingController(text: initialText);
   }
 
   @override
@@ -54,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(child: Text(error)),
               ],
             ),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: const Color(0xFFEF4444),
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
               label: "OK",
@@ -69,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _handleStart() {
+  void _handlePlay() {
     final text = _textController.text.trim();
     if (text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -82,13 +92,23 @@ class _HomeScreenState extends State<HomeScreen> {
       _focusNode.requestFocus();
       return;
     }
-    // Dismiss keyboard when starting playback
     FocusScope.of(context).unfocus();
-    widget.ttsController.startLoop(text: text);
+    setState(() => _forceEditMode = false);
+
+    if (widget.ttsController.isPaused) {
+      widget.ttsController.resumeLoop();
+    } else {
+      widget.ttsController.startLoop(text: text);
+    }
+  }
+
+  void _handlePause() {
+    widget.ttsController.pauseLoop();
   }
 
   void _handleStop() {
     widget.ttsController.stopLoop();
+    setState(() => _forceEditMode = false);
   }
 
   void _handleClear() {
@@ -101,7 +121,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final previousText = _textController.text;
     setState(() {
       _textController.clear();
+      _forceEditMode = true;
     });
+    StorageService.saveText('');
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -110,10 +132,12 @@ class _HomeScreenState extends State<HomeScreen> {
         duration: const Duration(seconds: 3),
         action: SnackBarAction(
           label: "UNDO",
+          textColor: const Color(0xFF00F2FE),
           onPressed: () {
             setState(() {
               _textController.text = previousText;
             });
+            StorageService.saveText(previousText);
           },
         ),
       ),
@@ -126,6 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _textController.text = data.text!;
       });
+      StorageService.saveText(_textController.text);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -139,206 +164,278 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showVoiceSelector() {
-    showDialog(
-      context: context,
-      builder: (ctx) => VoiceSelectorDialog(
-        voices: widget.ttsController.englishVoices,
-        currentVoice: widget.ttsController.selectedVoice,
-        onVoiceSelected: (voice) {
-          widget.ttsController.selectVoice(
-            voice,
-            activeText: _textController.text,
-          );
-        },
-      ),
-    );
+    VoiceSelectorSheet.show(context, widget.ttsController);
+  }
+
+  void _showAboutDialog() {
+    AppAboutDialog.show(context);
   }
 
   String _formatSpeedLabel(double speed) {
     if ((speed - 1.0).abs() < 0.05) return "1.0x (Normal)";
-    if (speed <= 0.6) return "${speed.toStringAsFixed(1)}x (Very Slow)";
-    if (speed < 1.0) return "${speed.toStringAsFixed(1)}x (Slow)";
-    if (speed <= 1.4) return "${speed.toStringAsFixed(1)}x (Moderate)";
+    if (speed <= 0.6) return "${speed.toStringAsFixed(1)}x (Slow)";
+    if (speed < 1.0) return "${speed.toStringAsFixed(1)}x (Calm)";
+    if (speed <= 1.4) return "${speed.toStringAsFixed(1)}x (Brisk)";
     if (speed <= 1.8) return "${speed.toStringAsFixed(1)}x (Fast)";
-    return "${speed.toStringAsFixed(1)}x (Double Speed)";
+    return "${speed.toStringAsFixed(1)}x (Double)";
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final isDark = widget.isDarkMode;
     final isPlaying = widget.ttsController.isPlaying;
-    final isWaiting = widget.ttsController.isWaitingBetweenLoops;
-    final repeatCount = widget.ttsController.repeatCount;
+    final isPaused = widget.ttsController.isPaused;
+    final isIdle = widget.ttsController.isIdle;
     final speed = widget.ttsController.speed;
     final pauseDuration = widget.ttsController.pauseDuration;
-    final selectedVoice = widget.ttsController.selectedVoice;
+    final selectedVoice = widget.ttsController.selectedCuratedVoice;
 
-    // Word and character count calculation
     final text = _textController.text;
     final charCount = text.length;
     final wordCount = text.trim().isEmpty
         ? 0
         : text.trim().split(RegExp(r'\s+')).where((s) => s.isNotEmpty).length;
 
+    // Show WordHighlightView during playback unless user explicitly tapped edit
+    final bool showHighlightReader = (isPlaying || isPaused) && !_forceEditMode;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.repeat_rounded,
-                color: colorScheme.onPrimaryContainer,
-                size: 22,
-              ),
-            ),
+            const AppLogo(size: 32),
             const SizedBox(width: 10),
-            const Text(
-              "Repeat Speaker",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Repeat Speaker",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    letterSpacing: 0.3,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  ),
+                ),
+                Text(
+                  "LIQUID GLASS AUDIO",
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                    color: const Color(0xFF00F2FE).withValues(alpha: 0.85),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
         actions: [
+          // Voice Selector Action
           IconButton(
-            tooltip: "Choose English Voice",
-            icon: const Icon(Icons.record_voice_over_outlined),
+            tooltip: "Voice Models",
+            icon: const Icon(Icons.record_voice_over_rounded, size: 22),
             onPressed: _showVoiceSelector,
           ),
+          // Theme Toggle Action
           IconButton(
-            tooltip: widget.isDarkMode
-                ? "Switch to Light Mode"
-                : "Switch to Dark Mode",
+            tooltip: isDark ? "Switch to Light Mode" : "Switch to Dark Mode",
             icon: Icon(
-              widget.isDarkMode
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
+              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+              size: 22,
             ),
             onPressed: widget.onToggleTheme,
+          ),
+          // About Dialog Action
+          IconButton(
+            tooltip: "About",
+            icon: const Icon(Icons.info_outline_rounded, size: 22),
+            onPressed: _showAboutDialog,
           ),
           const SizedBox(width: 4),
         ],
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Scrollable Content Area
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Text Input Container Card
-                    Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(
-                          color: isPlaying
-                              ? colorScheme.primary
-                              : colorScheme.outlineVariant.withOpacity(0.5),
-                          width: isPlaying ? 2.0 : 1.0,
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
+      body: LiquidGlassBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Scrollable Content Area
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // 1. Text & Synchronized Word Highlighting Card
+                      LiquidGlassContainer(
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Action bar inside the text card
+                            // Card Action Header
                             Row(
                               children: [
-                                Text(
-                                  "Text to Repeat",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                    color: colorScheme.primary,
-                                  ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      showHighlightReader
+                                          ? Icons.spatial_audio_rounded
+                                          : Icons.edit_note_rounded,
+                                      size: 18,
+                                      color: const Color(0xFF6366F1),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      showHighlightReader
+                                          ? "Synchronized Playback"
+                                          : "Text to Repeat",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 13,
+                                        color: isDark
+                                            ? Colors.white
+                                            : const Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const Spacer(),
-                                // Paste button
-                                TextButton.icon(
-                                  onPressed: isPlaying ? null : _handlePaste,
-                                  icon: const Icon(
-                                    Icons.paste_rounded,
-                                    size: 16,
-                                  ),
-                                  label: const Text(
-                                    "Paste",
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                  style: TextButton.styleFrom(
-                                    visualDensity: VisualDensity.compact,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
+                                if (showHighlightReader)
+                                  TextButton.icon(
+                                    onPressed: () {
+                                      setState(() => _forceEditMode = true);
+                                    },
+                                    icon: const Icon(
+                                      Icons.edit_rounded,
+                                      size: 14,
+                                    ),
+                                    label: const Text(
+                                      "Edit",
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: const Color(0xFF00F2FE),
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                  )
+                                else ...[
+                                  TextButton.icon(
+                                    onPressed: isPlaying ? null : _handlePaste,
+                                    icon: const Icon(
+                                      Icons.paste_rounded,
+                                      size: 14,
+                                    ),
+                                    label: const Text(
+                                      "Paste",
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: const Color(0xFF6366F1),
+                                      visualDensity: VisualDensity.compact,
                                     ),
                                   ),
-                                ),
-                                // Clear button
-                                TextButton.icon(
-                                  onPressed: _textController.text.isEmpty
-                                      ? null
-                                      : _handleClear,
-                                  icon: const Icon(
-                                    Icons.clear_rounded,
-                                    size: 16,
-                                  ),
-                                  label: const Text(
-                                    "Clear",
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: colorScheme.error,
-                                    visualDensity: VisualDensity.compact,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
+                                  TextButton.icon(
+                                    onPressed: _textController.text.isEmpty
+                                        ? null
+                                        : _handleClear,
+                                    icon: const Icon(
+                                      Icons.clear_rounded,
+                                      size: 14,
+                                    ),
+                                    label: const Text(
+                                      "Clear",
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: const Color(0xFFEF4444),
+                                      visualDensity: VisualDensity.compact,
                                     ),
                                   ),
-                                ),
+                                ],
                               ],
                             ),
-                            const Divider(height: 12),
-                            // Multi-line Text Field
-                            TextField(
-                              controller: _textController,
-                              focusNode: _focusNode,
-                              maxLines: null,
-                              minLines: 6,
-                              keyboardType: TextInputType.multiline,
-                              textInputAction: TextInputAction.newline,
-                              onChanged: (_) => setState(() {}),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                height: 1.45,
+
+                            const Divider(height: 16, color: Color(0x26FFFFFF)),
+
+                            // Dynamic Text Content: Editor vs Synchronized Highlighter
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                minHeight: 140,
+                                maxHeight: 220,
                               ),
-                              decoration: InputDecoration(
-                                hintText: "Type or paste English text here...\nThe app will read it aloud in a continuous loop until you tap Stop.",
-                                hintStyle: TextStyle(
-                                  color: colorScheme.outline.withOpacity(0.7),
-                                  fontSize: 14,
-                                ),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                              ),
+                              child: showHighlightReader
+                                  ? WordHighlightView(
+                                      text: _textController.text,
+                                      highlightStart:
+                                          widget.ttsController.highlightStart,
+                                      highlightEnd:
+                                          widget.ttsController.highlightEnd,
+                                      isDark: isDark,
+                                      onDoubleTapEdit: () {
+                                        setState(() => _forceEditMode = true);
+                                      },
+                                    )
+                                  : TextField(
+                                      controller: _textController,
+                                      focusNode: _focusNode,
+                                      maxLines: null,
+                                      minLines: 5,
+                                      keyboardType: TextInputType.multiline,
+                                      textInputAction: TextInputAction.newline,
+                                      onChanged: (val) {
+                                        StorageService.saveText(val);
+                                        setState(() {});
+                                      },
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        height: 1.5,
+                                        color: isDark
+                                            ? Colors.white
+                                            : const Color(0xFF0F172A),
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText: "Type or paste English text to repeat...\nWord-by-word synchronized highlighting will guide your listening during playback.",
+                                        hintStyle: TextStyle(
+                                          color: isDark
+                                              ? const Color(0x66FFFFFF)
+                                              : const Color(0x66000000),
+                                          fontSize: 15,
+                                        ),
+                                        border: InputBorder.none,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              vertical: 4,
+                                            ),
+                                      ),
+                                    ),
                             ),
-                            // Word / Character Count Footer
+
+                            // Character & Word Counter Footer
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                if (showHighlightReader)
+                                  Text(
+                                    "Double-tap to edit",
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: isDark
+                                          ? const Color(0x66FFFFFF)
+                                          : const Color(0x66000000),
+                                    ),
+                                  )
+                                else
+                                  const SizedBox.shrink(),
                                 Text(
                                   "$wordCount words • $charCount characters",
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: colorScheme.outline,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? const Color(0x80FFFFFF)
+                                        : const Color(0x80000000),
                                   ),
                                 ),
                               ],
@@ -346,133 +443,114 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                    ),
 
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                    // Playback Status & Repeat Counter Card
-                    Card(
-                      elevation: 0,
-                      color: isPlaying
-                          ? (isWaiting
-                                ? Colors.amber.withOpacity(0.12)
-                                : Colors.teal.withOpacity(0.12))
-                          : colorScheme.surfaceContainerHighest.withOpacity(
-                              0.4,
-                            ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Padding(
+                      // 2. Active Voice Model Quick Pill
+                      LiquidGlassContainer(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 12,
                         ),
+                        onTap: _showVoiceSelector,
                         child: Row(
                           children: [
-                            // Status Indicator Icon / Pulse
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isPlaying
-                                    ? (isWaiting ? Colors.amber : Colors.teal)
-                                    : colorScheme.outline.withOpacity(0.2),
-                              ),
-                              child: Icon(
-                                isPlaying
-                                    ? (isWaiting
-                                          ? Icons.hourglass_top_rounded
-                                          : Icons.volume_up_rounded)
-                                    : Icons.play_arrow_outlined,
-                                size: 18,
-                                color: isPlaying
-                                    ? Colors.white
-                                    : colorScheme.outline,
-                              ),
+                            Text(
+                              selectedVoice.flag,
+                              style: const TextStyle(fontSize: 20),
                             ),
-                            const SizedBox(width: 12),
-                            // Counter and State Description
+                            const SizedBox(width: 10),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    isPlaying
-                                        ? (isWaiting
-                                              ? "Pausing between repeats..."
-                                              : "Playing repeat loop")
-                                        : "Ready to speak",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: isPlaying
-                                          ? (isWaiting
-                                                ? Colors.amber[800]
-                                                : Colors.teal[700])
-                                          : colorScheme.outline,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        selectedVoice.title,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: isDark
+                                              ? Colors.white
+                                              : const Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 1,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF00F2FE)
+                                              .withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          selectedVoice.qualityBadge,
+                                          style: const TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF00B4D8),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(height: 2),
                                   Text(
-                                    repeatCount == 0
-                                        ? "Repeated: 0 times"
-                                        : "Repeated: $repeatCount ${repeatCount == 1 ? 'time' : 'times'}",
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                    selectedVoice.subtitle,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: isDark
+                                          ? const Color(0x80FFFFFF)
+                                          : const Color(0x80000000),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            // Reset counter button if not playing and count > 0
-                            if (!isPlaying && repeatCount > 0)
-                              IconButton(
-                                tooltip: "Reset repeat counter",
-                                icon: const Icon(
-                                  Icons.refresh_rounded,
-                                  size: 20,
-                                ),
-                                onPressed: widget.ttsController.resetCounter,
-                              ),
+                            Icon(
+                              Icons.chevron_right_rounded,
+                              size: 20,
+                              color: isDark
+                                  ? const Color(0x66FFFFFF)
+                                  : const Color(0x66000000),
+                            ),
                           ],
                         ),
                       ),
-                    ),
 
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
 
-                    // Pause Duration Setting Card
-                    Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        side: BorderSide(
-                          color: colorScheme.outlineVariant.withOpacity(0.4),
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                      // 3. Playback Tuning Card (Speed & Pause Sliders)
+                      LiquidGlassContainer(
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            // Speed Slider Header
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   children: [
-                                    Icon(
-                                      Icons.timer_outlined,
-                                      size: 18,
-                                      color: colorScheme.primary,
+                                    const Icon(
+                                      Icons.speed_rounded,
+                                      size: 16,
+                                      color: Color(0xFF6366F1),
                                     ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      "Pause Between Repeats",
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      "Playback Speed",
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 13,
+                                        color: isDark
+                                            ? Colors.white
+                                            : const Color(0xFF0F172A),
                                       ),
                                     ),
                                   ],
@@ -483,17 +561,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: colorScheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(12),
+                                    color: const Color(0xFF6366F1)
+                                        .withValues(alpha: 0.18),
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
-                                    pauseDuration == 0.0
-                                        ? "No pause (0s)"
-                                        : "${pauseDuration.toStringAsFixed(1)}s",
-                                    style: TextStyle(
+                                    _formatSpeedLabel(speed),
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
-                                      color: colorScheme.onPrimaryContainer,
+                                      color: Color(0xFF6366F1),
                                     ),
                                   ),
                                 ),
@@ -501,9 +578,83 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SliderTheme(
                               data: SliderTheme.of(context).copyWith(
-                                trackHeight: 4,
+                                trackHeight: 3,
                                 thumbShape: const RoundSliderThumbShape(
-                                  enabledThumbRadius: 8,
+                                  enabledThumbRadius: 7,
+                                ),
+                              ),
+                              child: Slider(
+                                value: speed,
+                                min: 0.5,
+                                max: 2.0,
+                                divisions: 15,
+                                label: "${speed.toStringAsFixed(1)}x",
+                                onChanged: (val) {
+                                  widget.ttsController.setSpeed(
+                                    val,
+                                    activeText: _textController.text,
+                                    applyImmediately: true,
+                                  );
+                                },
+                              ),
+                            ),
+
+                            const Divider(height: 8, color: Color(0x1AFFFFFF)),
+
+                            // Pause Slider Header
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.timer_outlined,
+                                      size: 16,
+                                      color: Color(0xFF00F2FE),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      "Pause Between Repeats",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                        color: isDark
+                                            ? Colors.white
+                                            : const Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF00F2FE)
+                                        .withValues(alpha: 0.18),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    pauseDuration == 0.0
+                                        ? "No pause (0s)"
+                                        : "${pauseDuration.toStringAsFixed(1)}s",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF00B4D8),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                activeTrackColor: const Color(0xFF00F2FE),
+                                thumbColor: const Color(0xFF00F2FE),
+                                trackHeight: 3,
+                                thumbShape: const RoundSliderThumbShape(
+                                  enabledThumbRadius: 7,
                                 ),
                               ),
                               child: Slider(
@@ -520,222 +671,30 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                    ),
-
-                    // Voice Summary Pill / Button
-                    if (selectedVoice != null) ...[
-                      const SizedBox(height: 10),
-                      InkWell(
-                        onTap: _showVoiceSelector,
-                        borderRadius: BorderRadius.circular(10),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 4,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.mic_none_rounded,
-                                size: 16,
-                                color: colorScheme.outline,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                "Voice: ${selectedVoice['locale']} (${selectedVoice['name']?.split('.').last ?? 'Default'})",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: colorScheme.outline,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     ],
-                  ],
-                ),
-              ),
-            ),
-
-            // Fixed Thumb-Friendly Bottom Control Bar
-            Container(
-              decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(
-                      widget.isDarkMode ? 0.3 : 0.08,
-                    ),
-                    blurRadius: 10,
-                    offset: const Offset(0, -3),
-                  ),
-                ],
-                border: Border(
-                  top: BorderSide(
-                    color: colorScheme.outlineVariant.withOpacity(0.3),
-                    width: 1,
                   ),
                 ),
               ),
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Speech Speed Controller Row & Slider
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.speed_rounded,
-                            size: 18,
-                            color: colorScheme.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            "Speed",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.secondaryContainer,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          _formatSpeedLabel(speed),
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSecondaryContainer,
-                          ),
-                        ),
-                      ),
-                    ],
+
+              // Fixed Floating Bottom Circular Media Controls Bar
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: LiquidGlassContainer(
+                  borderRadius: 28,
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  child: CircularMediaControls(
+                    playbackState: widget.ttsController.playbackState,
+                    repeatCount: widget.ttsController.repeatCount,
+                    isDark: isDark,
+                    onPlay: _handlePlay,
+                    onPause: _handlePause,
+                    onStop: _handleStop,
+                    onResetCounter: widget.ttsController.resetCounter,
                   ),
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 4,
-                      thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 8,
-                      ),
-                    ),
-                    child: Slider(
-                      value: speed,
-                      min: 0.5,
-                      max: 2.0,
-                      divisions: 15, // 0.1 increments
-                      label: "${speed.toStringAsFixed(1)}x",
-                      onChanged: (val) {
-                        // Applies immediately even during playback
-                        widget.ttsController.setSpeed(
-                          val,
-                          activeText: _textController.text,
-                          applyImmediately: true,
-                        );
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  // Large Dual Control Buttons (Thumb-friendly, 56dp height)
-                  Row(
-                    children: [
-                      // START Button
-                      Expanded(
-                        flex: isPlaying ? 1 : 2,
-                        child: SizedBox(
-                          height: 54,
-                          child: ElevatedButton.icon(
-                            onPressed: isPlaying ? null : _handleStart,
-                            icon: const Icon(
-                              Icons.play_arrow_rounded,
-                              size: 26,
-                            ),
-                            label: const Text(
-                              "START",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(
-                                0xFF10B981,
-                              ), // Emerald green
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: widget.isDarkMode
-                                  ? Colors.grey[800]
-                                  : Colors.grey[300],
-                              disabledForegroundColor: widget.isDarkMode
-                                  ? Colors.grey[600]
-                                  : Colors.grey[500],
-                              elevation: isPlaying ? 0 : 3,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 12),
-
-                      // STOP Button
-                      Expanded(
-                        flex: isPlaying ? 2 : 1,
-                        child: SizedBox(
-                          height: 54,
-                          child: ElevatedButton.icon(
-                            onPressed: !isPlaying ? null : _handleStop,
-                            icon: const Icon(Icons.stop_rounded, size: 26),
-                            label: const Text(
-                              "STOP",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(
-                                0xFFEF4444,
-                              ), // Crimson red
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: widget.isDarkMode
-                                  ? Colors.grey[800]
-                                  : Colors.grey[300],
-                              disabledForegroundColor: widget.isDarkMode
-                                  ? Colors.grey[600]
-                                  : Colors.grey[500],
-                              elevation: isPlaying ? 4 : 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

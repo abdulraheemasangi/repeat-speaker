@@ -4,71 +4,115 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
-/// Manages Text-To-Speech lifecycle, looping playback, speed mapping,
-/// pause delays, wakelock, and voice selection.
+import '../models/voice_model.dart';
+import 'storage_service.dart';
+
+enum PlaybackState { idle, playing, paused, pausingBetweenLoops }
+
+/// Upgraded TTS Controller managing speech synthesis, endless loop sequencing,
+/// 5 curated voice models, real-time word-by-word highlighting synchronization,
+/// and automatic persistent settings.
 class TtsController extends ChangeNotifier {
   final FlutterTts _tts = FlutterTts();
 
-  bool _isPlaying = false;
-  bool _isWaitingBetweenLoops = false;
+  PlaybackState _playbackState = PlaybackState.idle;
   bool _isRestartRequested = false;
   int _repeatCount = 0;
-  double _speed = 1.0; // UI speed: 0.5x to 2.0x
-  double _pauseDuration = 1.0; // Seconds: 0.0 to 5.0
-  List<Map<String, String>> _englishVoices = [];
-  Map<String, String>? _selectedVoice;
+  double _speed = 1.0;
+  double _pauseDuration = 1.0;
   String? _errorMessage;
   bool _isInitialized = false;
   int _loopSessionId = 0;
+  String _activeSpeakingText = '';
+
+  // Curated Voices (5 High-Quality Models)
+  late List<CuratedVoice> _curatedVoices;
+  late CuratedVoice _selectedCuratedVoice;
+  List<Map<String, String>> _rawDeviceVoices = [];
+
+  // Synchronized Word Highlighting
+  int? _highlightStart;
+  int? _highlightEnd;
+  String? _currentWord;
 
   // Getters
-  bool get isPlaying => _isPlaying;
-  bool get isWaitingBetweenLoops => _isWaitingBetweenLoops;
+  PlaybackState get playbackState => _playbackState;
+  bool get isPlaying =>
+      _playbackState == PlaybackState.playing ||
+      _playbackState == PlaybackState.pausingBetweenLoops;
+  bool get isPaused => _playbackState == PlaybackState.paused;
+  bool get isIdle => _playbackState == PlaybackState.idle;
+  bool get isWaitingBetweenLoops =>
+      _playbackState == PlaybackState.pausingBetweenLoops;
+
   int get repeatCount => _repeatCount;
   double get speed => _speed;
   double get pauseDuration => _pauseDuration;
-  List<Map<String, String>> get englishVoices => _englishVoices;
-  Map<String, String>? get selectedVoice => _selectedVoice;
   String? get errorMessage => _errorMessage;
   bool get isInitialized => _isInitialized;
+  String get activeSpeakingText => _activeSpeakingText;
 
-  /// Initializes TTS engine with default configurations.
+  List<CuratedVoice> get curatedVoices => _curatedVoices;
+  CuratedVoice get selectedCuratedVoice => _selectedCuratedVoice;
+
+  int? get highlightStart => _highlightStart;
+  int? get highlightEnd => _highlightEnd;
+  String? get currentWord => _currentWord;
+
+  /// Initializes TTS engine, restores persistent settings, and binds curated voice models.
   Future<void> initialize() async {
+    // 1. Initialize persistent storage
+    await StorageService.init();
+    _speed = StorageService.getSpeed(defaultSpeed: 1.0);
+    _pauseDuration = StorageService.getPauseDuration(defaultPause: 1.0);
+
+    // 2. Initialize curated voices list
+    _curatedVoices = CuratedVoice.getCuratedList();
+    _selectedCuratedVoice = _curatedVoices.first;
+
     try {
       await _tts.awaitSpeakCompletion(true);
-      await _tts.setLanguage("en-US");
       await _tts.setPitch(1.0);
       await _tts.setVolume(1.0);
       await _applySpeechRate();
 
-      // Configure TTS handlers
+      // Configure Real-Time Word Highlighting Progress Handler
+      _tts.setProgressHandler((String text, int start, int end, String word) {
+        _highlightStart = start;
+        _highlightEnd = end;
+        _currentWord = word;
+        notifyListeners();
+      });
+
       _tts.setErrorHandler((dynamic msg) {
         _errorMessage = "TTS engine error: $msg";
         notifyListeners();
       });
 
-      // Load installed English voices
-      await _loadVoices();
+      // Load installed device voices and bind to curated models
+      await _loadAndBindVoices();
 
-      // Verify language availability
-      final dynamic isAvailable = await _tts.isLanguageAvailable("en-US");
-      if (isAvailable == false) {
-        _errorMessage = "English TTS voice is not available. Please install or enable 'Speech Services by Google' in your Android Settings.";
+      // Restore saved voice model preference
+      final savedVoiceId = StorageService.getVoiceId();
+      if (savedVoiceId != null) {
+        final match = _curatedVoices.firstWhere(
+          (v) => v.id == savedVoiceId,
+          orElse: () => _curatedVoices.first,
+        );
+        await selectCuratedVoice(match, autoSave: false);
+      } else {
+        await _applyVoiceToEngine(_selectedCuratedVoice);
       }
 
       _isInitialized = true;
     } catch (e) {
       _errorMessage =
-          "Could not initialize TTS engine ($e). Please make sure 'Speech Services by Google' is enabled on your device.";
+          "Could not initialize TTS engine ($e). Make sure 'Speech Services by Google' is enabled.";
     }
     notifyListeners();
   }
 
-  /// Map UI speed (0.5x - 2.0x) to Android flutter_tts engine rate.
-  /// On Android flutter_tts:
-  /// - 0.5 engine rate produces 1.0x normal speech.
-  /// - 0.25 engine rate produces 0.5x half speed.
-  /// - 1.0 engine rate produces 2.0x double speed.
+  /// Maps 0.5x–2.0x UI speed to Android flutter_tts rate (0.5 engine rate = 1.0x normal speech).
   double _mapSpeedToEngineRate(double speed) {
     return (speed * 0.5).clamp(0.1, 1.0);
   }
@@ -78,8 +122,8 @@ class TtsController extends ChangeNotifier {
     await _tts.setSpeechRate(engineRate);
   }
 
-  /// Discovers available English voices on the device, prioritizing Google high-quality en-US voices.
-  Future<void> _loadVoices() async {
+  /// Discovers available device voices and binds them to the 5 curated voice models.
+  Future<void> _loadAndBindVoices() async {
     try {
       final dynamic rawVoices = await _tts.getVoices;
       if (rawVoices is List) {
@@ -88,48 +132,16 @@ class TtsController extends ChangeNotifier {
           if (item is Map) {
             final name = item['name']?.toString() ?? '';
             final locale = item['locale']?.toString() ?? '';
-            final lowerLocale = locale.toLowerCase();
-            // Filter only English voices
-            if (lowerLocale.startsWith('en') ||
-                lowerLocale.contains('en-') ||
-                lowerLocale.contains('en_')) {
+            final lower = locale.toLowerCase();
+            if (lower.startsWith('en') ||
+                lower.contains('en-') ||
+                lower.contains('en_')) {
               parsed.add({'name': name, 'locale': locale});
             }
           }
         }
-
-        _englishVoices = parsed;
-
-        if (_englishVoices.isNotEmpty) {
-          // Preference order:
-          // 1. Google TTS en-US natural/high-quality/network voice
-          // 2. Any en-US voice
-          // 3. First available English voice
-          Map<String, String>? best;
-
-          for (final voice in _englishVoices) {
-            final loc = voice['locale']?.toLowerCase() ?? '';
-            final name = voice['name']?.toLowerCase() ?? '';
-            final isEnUs = loc.contains('en-us') || loc.contains('en_us');
-            final isGoogleOrNatural =
-                name.contains('google') ||
-                name.contains('natural') ||
-                name.contains('network') ||
-                name.contains('premium');
-
-            if (isEnUs && isGoogleOrNatural) {
-              best = voice;
-              break;
-            }
-          }
-
-          best ??= _englishVoices.firstWhere((v) {
-            final loc = v['locale']?.toLowerCase() ?? '';
-            return loc.contains('en-us') || loc.contains('en_us');
-          }, orElse: () => _englishVoices.first);
-
-          await selectVoice(best);
-        }
+        _rawDeviceVoices = parsed;
+        CuratedVoice.bindNativeVoices(_curatedVoices, _rawDeviceVoices);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -138,39 +150,68 @@ class TtsController extends ChangeNotifier {
     }
   }
 
-  /// Sets selected voice
-  Future<void> selectVoice(
-    Map<String, String> voice, {
+  /// Sets the active Curated Voice model and applies it to the native engine.
+  Future<void> selectCuratedVoice(
+    CuratedVoice voice, {
+    bool autoSave = true,
     String? activeText,
   }) async {
-    _selectedVoice = voice;
-    try {
-      await _tts.setVoice({"name": voice['name']!, "locale": voice['locale']!});
-      if (_isPlaying && activeText != null && activeText.trim().isNotEmpty) {
-        _isRestartRequested = true;
+    _selectedCuratedVoice = voice;
+    if (autoSave) {
+      await StorageService.saveVoiceId(voice.id);
+    }
+    await _applyVoiceToEngine(voice);
+
+    if (isPlaying && activeText != null && activeText.trim().isNotEmpty) {
+      _isRestartRequested = true;
+      try {
         await _tts.stop();
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error setting voice: $e");
-      }
+      } catch (_) {}
     }
     notifyListeners();
   }
 
-  /// Updates speech speed (0.5x to 2.0x).
-  /// If [applyImmediately] is true and currently speaking, the current sentence
-  /// will be restarted immediately at the new speed.
+  Future<void> _applyVoiceToEngine(CuratedVoice voice) async {
+    try {
+      await _tts.setLanguage(voice.locale);
+      if (voice.matchedNativeName != null &&
+          voice.matchedNativeName!.isNotEmpty) {
+        await _tts.setVoice({
+          "name": voice.matchedNativeName!,
+          "locale": voice.locale,
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error applying voice: $e");
+      }
+    }
+  }
+
+  /// Speaks a quick 1-sentence sample preview for the voice selector sheet.
+  Future<void> previewVoice(CuratedVoice voice) async {
+    final wasPlaying = isPlaying;
+    if (wasPlaying) {
+      await pauseLoop();
+    }
+    try {
+      await _applyVoiceToEngine(voice);
+      await _tts.speak(voice.samplePreview);
+    } catch (_) {}
+  }
+
+  /// Updates speech speed (0.5x to 2.0x) with immediate persistence and live rate update.
   Future<void> setSpeed(
     double newSpeed, {
     String? activeText,
     bool applyImmediately = true,
   }) async {
     _speed = double.parse(newSpeed.toStringAsFixed(1));
+    await StorageService.saveSpeed(_speed);
     await _applySpeechRate();
     notifyListeners();
 
-    if (_isPlaying &&
+    if (isPlaying &&
         applyImmediately &&
         activeText != null &&
         activeText.trim().isNotEmpty) {
@@ -181,13 +222,14 @@ class TtsController extends ChangeNotifier {
     }
   }
 
-  /// Sets pause duration between loop repeats (0 to 5 seconds).
+  /// Sets pause duration between loop repeats (0 to 5 seconds) with immediate persistence.
   void setPauseDuration(double duration) {
     _pauseDuration = double.parse(duration.toStringAsFixed(1));
+    StorageService.savePauseDuration(_pauseDuration);
     notifyListeners();
   }
 
-  /// Starts the endless repeat loop for the given text.
+  /// Starts or resumes the endless repeat loop for the given text.
   Future<void> startLoop({required String text}) async {
     final cleanText = text.trim();
     if (cleanText.isEmpty) {
@@ -196,25 +238,30 @@ class TtsController extends ChangeNotifier {
       return;
     }
 
+    _activeSpeakingText = cleanText;
     _errorMessage = null;
-    _isPlaying = true;
-    _isWaitingBetweenLoops = false;
+    _playbackState = PlaybackState.playing;
     _isRestartRequested = false;
-    _repeatCount = 0;
+
+    // If starting fresh (from idle), reset repeat counter
+    if (_repeatCount == 0 || _playbackState == PlaybackState.idle) {
+      _repeatCount = 0;
+    }
+
     final int sessionId = ++_loopSessionId;
     notifyListeners();
 
-    // Prevent phone screen from turning off while playing
     try {
       await WakelockPlus.enable();
     } catch (_) {}
 
-    while (_isPlaying && sessionId == _loopSessionId) {
+    while (isPlaying && sessionId == _loopSessionId) {
       if (!_isRestartRequested) {
         _repeatCount++;
       }
       _isRestartRequested = false;
-      _isWaitingBetweenLoops = false;
+      _playbackState = PlaybackState.playing;
+      _clearHighlight();
       notifyListeners();
 
       try {
@@ -224,19 +271,19 @@ class TtsController extends ChangeNotifier {
         break;
       }
 
-      // Check if user stopped while speaking
-      if (!_isPlaying || sessionId != _loopSessionId) {
+      // Check if paused or stopped while speaking
+      if (!isPlaying || sessionId != _loopSessionId) {
         break;
       }
 
-      // If speech was stopped to restart immediately at new speed or voice
       if (_isRestartRequested) {
         continue;
       }
 
       // Configurable pause between repeats (0s - 5s)
       if (_pauseDuration > 0) {
-        _isWaitingBetweenLoops = true;
+        _playbackState = PlaybackState.pausingBetweenLoops;
+        _clearHighlight();
         notifyListeners();
 
         final int totalMs = (_pauseDuration * 1000).toInt();
@@ -244,7 +291,7 @@ class TtsController extends ChangeNotifier {
         final int steps = (totalMs / stepMs).ceil();
 
         for (int i = 0; i < steps; i++) {
-          if (!_isPlaying ||
+          if (!isPlaying ||
               sessionId != _loopSessionId ||
               _isRestartRequested) {
             break;
@@ -258,11 +305,10 @@ class TtsController extends ChangeNotifier {
       }
     }
 
-    // Clean up when loop exits
-    if (sessionId == _loopSessionId) {
-      _isPlaying = false;
-      _isWaitingBetweenLoops = false;
-      _isRestartRequested = false;
+    // Clean up if loop naturally exited
+    if (sessionId == _loopSessionId && _playbackState != PlaybackState.paused) {
+      _playbackState = PlaybackState.idle;
+      _clearHighlight();
       try {
         await WakelockPlus.disable();
       } catch (_) {}
@@ -270,11 +316,31 @@ class TtsController extends ChangeNotifier {
     }
   }
 
-  /// Immediately stops playback, cancels the loop, and disables screen wakelock.
+  /// Pauses playback and holds state.
+  Future<void> pauseLoop() async {
+    _playbackState = PlaybackState.paused;
+    _loopSessionId++; // Invalidate active speech run
+    try {
+      await _tts.stop();
+    } catch (_) {}
+    try {
+      await WakelockPlus.disable();
+    } catch (_) {}
+    notifyListeners();
+  }
+
+  /// Resumes playback from paused state.
+  Future<void> resumeLoop() async {
+    if (_activeSpeakingText.isNotEmpty) {
+      await startLoop(text: _activeSpeakingText);
+    }
+  }
+
+  /// Completely stops playback, cancels loop, and resets word highlighting.
   Future<void> stopLoop() async {
-    _isPlaying = false;
-    _isWaitingBetweenLoops = false;
+    _playbackState = PlaybackState.idle;
     _isRestartRequested = false;
+    _clearHighlight();
     _loopSessionId++; // Invalidate active loop
 
     try {
@@ -286,6 +352,12 @@ class TtsController extends ChangeNotifier {
     } catch (_) {}
 
     notifyListeners();
+  }
+
+  void _clearHighlight() {
+    _highlightStart = null;
+    _highlightEnd = null;
+    _currentWord = null;
   }
 
   /// Resets loop counter
@@ -302,7 +374,7 @@ class TtsController extends ChangeNotifier {
 
   @override
   void dispose() {
-    _isPlaying = false;
+    _playbackState = PlaybackState.idle;
     _loopSessionId++;
     _tts.stop();
     try {

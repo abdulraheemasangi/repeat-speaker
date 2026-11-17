@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.72"
+        android:scaleY="0.72"
+        android:translateX="15.12"
+        android:translateY="15.12">
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#6366F1"
+            android:strokeWidth="2.5"
+            android:pathData="M54,12 A42,42 0 1,1 53.9,12 Z"/>
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#00F2FE"
+            android:strokeWidth="6"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M34,44 C26,44 20,49 20,54 C20,59 26,64 34,64 C44,64 49,44 59,44 C67,44 73,49 73,54 C73,59 67,64 59,64 C49,64 44,44 34,44 Z"/>
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#818CF8"
+            android:strokeWidth="3.5"
+            android:strokeLineCap="round"
+            android:pathData="M78,45 C83,50 83,58 78,63"/>
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#A855F7"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M85,39 C92,47 92,61 85,69"/>
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#818CF8"
+            android:strokeWidth="3.5"
+            android:strokeLineCap="round"
+            android:pathData="M15,45 C10,50 10,58 15,63"/>
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#A855F7"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M8,39 C1,47 1,61 8,69"/>
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M46.5,54 A1.5,1.5 0 1,1 46.4,54 Z"/>
+    </group>
+</vector>

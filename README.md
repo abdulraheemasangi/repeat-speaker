@@ -1,131 +1,67 @@
-# Repeat Speaker 🎙️🔁
+# Repeat Speaker 🎙️✨ (v1.1.0)
 
-A simple, clean, and distraction-free Android mobile app built with Flutter. It lets you type or paste English text and speaks it aloud in an endless loop until you stop it.
-
-Perfect for:
-- 📖 **Language & Pronunciation Practice:** Listen to sentences repeatedly to master rhythm, intonation, and pronunciation.
-- 🧠 **Memorization & Exam Prep:** Memorize speeches, definitions, formulas, or interview answers through continuous auditory reinforcement.
-- 🧘 **Mantra & Affirmation Repetition:** Loop daily affirmations or study points hands-free.
+A distraction-free, Apple iOS-inspired **Liquid Glass** mobile app built with Flutter. It lets you type or paste English text and speaks it aloud in a continuous loop with synchronized real-time word-by-word highlighting until paused or stopped.
 
 ---
 
-## 📱 Features
+## ✨ Version 1.1.0 Highlights
 
-- **Multi-line Text Input:** Generous input box with real-time word and character counters.
-- **Quick Clear & Paste:** Convenient action buttons inside the input card, including one-tap clipboard paste and undoable clear.
-- **Endless Audio Loop:** Reliably speaks your text over and over without overlapping audio using `awaitSpeakCompletion`.
-- **Configurable Pause (0s – 5s):** Set a rest interval between repeats (default: 1.0 second) with responsive early-cancellation.
-- **Repeat Counter:** Real-time counter tracks exactly how many times the phrase has looped ("Repeated: 5 times").
-- **Thumb-Friendly Bottom Control Bar:**
-  - **Large START & STOP Buttons:** Highly visible, large 54dp touch targets with distinct emerald green and crimson red states.
-  - **Calibrated Speed Slider:** Smooth speed adjustment from **0.5x to 2.0x** (in 0.1x steps) calibrated for Android's TTS engine so 1.0x sounds like natural human speech. Changing speed restarts or applies immediately.
-- **Offline & Free English Voices:** Uses your device's built-in Text-to-Speech engine (`flutter_tts`). No API keys, no paid subscriptions, and completely offline.
-- **Voice Selector:** Browse and select from all available English voices on your device, with automatic prioritization of high-quality Google TTS voices.
-- **Keep Screen Awake:** Utilizes `wakelock_plus` to keep the screen active while repeating so the device does not go to sleep mid-session.
-- **Android 11+ Package Visibility:** Includes `<queries>` for `android.intent.action.TTS_SERVICE` in `AndroidManifest.xml` to detect all installed TTS engines on Android 11, 12, 13, 14, and 15+.
-- **Material 3 Design:** Sleek modern Dark theme by default, with a one-tap Light theme toggle in the AppBar.
+- 💎 **Apple iOS Liquid Glass UI:** Translucent frosted glass surfaces, glowing ambient depth, refined borders, and smooth micro-animations.
+- 📖 **Real-Time Word Highlighting:** Synchronized word-by-word visual highlighting during speech, wrapped in a glowing Liquid Glass pill that auto-scrolls with playback.
+- 🎙️ **5 Curated Voice Models:** Curated down to 5 distinct, studio-grade natural voices (US Studio, US Clarity, British Elegance, British Warmth, Australian Crisp) removing robotic/unclear voice clutter.
+- 💾 **Persistent Data & Settings:** Automatically preserves entered text, selected voice model, playback speed, pause interval, and theme preference across app closures and restarts.
+- ⏯️ **Circular Media Controls:** Large floating circular Play/Pause button with pulse halo, secondary Stop and Counter Reset controls.
+- 🛡️ **Active Screen Wakelock:** Keeps screen active during repetition sessions so your phone never sleeps mid-study.
+- 📶 **100% Offline & Free:** Powered exclusively by the device's native TTS engine. No API keys, no subscriptions, zero data tracking.
 
 ---
 
 ## 📥 Direct APK Download & Installation
 
-You do not need to install Android Studio or Flutter on your computer to use Repeat Speaker on your phone. You can download the pre-compiled APK directly from GitHub Releases:
+You can download the pre-compiled APK directly from GitHub Releases:
 
-### 🔗 [Download Latest RepeatSpeaker.apk](https://github.com/abdulraheemasangi/repeat-speaker/releases/latest)
-
-> Replace `abdulraheemasangi/repeat-speaker` with your GitHub repository path.
+### 🔗 [Download Latest RepeatSpeaker.apk (v1.1.0)](https://github.com/abdulraheemasangi/repeat-speaker/releases/latest)
 
 ### How to Install on your Android Phone:
-1. Open the [Releases](https://github.com/abdulraheemasangi/repeat-speaker/releases/latest) page in Chrome on your Android device.
+1. Open the [Releases](https://github.com/abdulraheemasangi/repeat-speaker/releases/latest) page in Chrome on your Android phone.
 2. Tap **`RepeatSpeaker.apk`** under **Assets** to download it.
 3. Once downloaded, tap the file in your notification bar (or find it in your **Files / Downloads** app).
 4. If Android displays a prompt saying *"For your security, your phone is not allowed to install unknown apps from this source"*:
    - Tap **Settings** in the popup.
    - Toggle on **Allow from this source**.
-   - Tap back and press **Install**.
-5. Open **Repeat Speaker**, type or paste your text, and press **START**!
+   - Tap back and press **Install** (or **Update**).
+5. Open **Repeat Speaker**, type or paste your text, adjust speed, and press the glowing **Play** button!
+
+---
+
+## 🎨 Liquid Glass Design System
+
+The app utilizes a custom Apple iOS-inspired glassmorphism architecture:
+- **`LiquidGlassContainer`:** Real-time hardware-accelerated frosted blur (`BackdropFilter` with `sigmaX: 16, sigmaY: 16`), translucent white gradients, and dual-layer specular borders.
+- **`LiquidGlassBackground`:** Ambient radial chromatic orbs (Electric Cyan, Royal Indigo, Radiant Purple) that float behind glass panels, giving true optical depth.
+- **`WordHighlightView`:** Rich-text reader rendering synchronized word boundaries with glowing indigo-cyan highlight pills and automatic viewport tracking.
+
+---
+
+## 🎙️ Curated Voice Models
+
+| Model | Accent | Gender | Profile |
+| :--- | :--- | :--- | :--- |
+| **US Studio** | 🇺🇸 en-US | Female | Clear, natural, articulate studio narration |
+| **US Clarity** | 🇺🇸 en-US | Male | Deep, focused, authoritative American voice |
+| **British Elegance** | 🇬🇧 en-GB | Female | Sophisticated, classic British pronunciation |
+| **British Warmth** | 🇬🇧 en-GB | Male | Gentle, warm, calm British cadence |
+| **Australian Crisp** | 🇦🇺 en-AU | Natural | Bright, friendly Australian speech rhythm |
 
 ---
 
 ## 🚀 GitHub Actions Automated Build Pipeline
 
-This repository includes a pre-configured GitHub Actions workflow at [`.github/workflows/build-apk.yml`](.github/workflows/build-apk.yml).
-
-Every time you:
-1. Push code to the `main` branch, OR
-2. Push a version tag (e.g. `git tag v1.0.0 && git push origin v1.0.0`), OR
-3. Trigger the workflow manually from the **Actions** tab on GitHub:
-
-GitHub will automatically:
-- Spin up an Ubuntu runner with Java 17 and Flutter stable.
-- Build a signed release APK (`RepeatSpeaker.apk`).
-- Upload the APK as a workflow artifact.
-- Create/update a GitHub Release with `RepeatSpeaker.apk` attached for direct download!
-
----
-
-## 🔐 Keystore & APK Signing
-
-By default, `android/app/build.gradle` is configured to sign release builds using the standard Android debug key:
-```groovy
-buildTypes {
-    release {
-        signingConfig signingConfigs.debug
-        ...
-    }
-}
-```
-This guarantees that GitHub Actions immediately outputs an APK that installs without signature errors on any Android device.
-
-### How to Switch to a Production Keystore (Optional)
-When you are ready to publish to Google Play or sign with a custom keystore:
-1. Generate an upload keystore:
-   ```bash
-   keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias
-   ```
-2. Create a file `android/key.properties` (this file is ignored by `.gitignore`):
-   ```properties
-   storePassword=yourStorePassword
-   keyPassword=yourKeyPassword
-   keyAlias=my-key-alias
-   storeFile=../my-release-key.jks
-   ```
-3. Update `android/app/build.gradle` to load `key.properties` and assign `signingConfig signingConfigs.release`.
-
----
-
-## 💻 Running the App Locally (For Developers)
-
-### Prerequisites:
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) (3.0.0 or higher)
-- Android Studio or Android SDK command-line tools
-- A physical Android device with USB debugging enabled, or an Android Emulator
-
-### Steps:
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/abdulraheemasangi/repeat_speaker.git
-   cd repeat_speaker
-   ```
-2. Fetch dependencies:
-   ```bash
-   flutter pub get
-   ```
-3. Connect your Android phone via USB (enable **USB Debugging** in Developer Options).
-4. Verify your device is recognized:
-   ```bash
-   flutter devices
-   ```
-5. Run the app:
-   ```bash
-   flutter run
-   ```
-6. Build a standalone release APK locally:
-   ```bash
-   flutter build apk --release
-   ```
-   The built APK will be located at:
-   `build/app/outputs/flutter-apk/app-release.apk`
+Every commit pushed to `main` automatically triggers [.github/workflows/build-apk.yml](.github/workflows/build-apk.yml):
+- Compiles the release APK (`RepeatSpeaker.apk`).
+- Auto-configures Android 11+ TTS queries and Wakelock permissions.
+- Signs the APK with Android release debug signature for immediate 1-tap installation.
+- Automatically publishes a new GitHub Release with direct download links.
 
 ---
 
@@ -133,27 +69,38 @@ When you are ready to publish to Google Play or sign with a custom keystore:
 
 ```
 ├── .github/
+│   ├── scripts/
+│   │   └── configure_android.py  # CI script configuring manifest queries & signing
 │   └── workflows/
 │       └── build-apk.yml         # Automated GitHub Actions APK build & release
-├── android/
-│   ├── app/
-│   │   ├── build.gradle          # Android app configuration, minSdk 21, debug signing
-│   │   └── src/main/
-│   │       ├── AndroidManifest.xml # Android 11+ TTS queries, Wakelock, portrait lock
-│   │       └── kotlin/.../MainActivity.kt
-│   ├── build.gradle
-│   └── settings.gradle
+├── android_assets/               # Master drawables for custom Liquid Glass branding
+│   ├── drawable/
+│   │   ├── ic_launcher_background.xml
+│   │   ├── ic_launcher_foreground.xml
+│   │   └── launch_background.xml
+│   └── mipmap-anydpi-v26/
+│       └── ic_launcher.xml
 ├── lib/
-│   ├── main.dart                 # App initialization, Material 3 Dark/Light themes
+│   ├── main.dart                 # App bootstrap, persistent theme restore
+│   ├── models/
+│   │   └── voice_model.dart      # 5 curated studio & neural voice definitions
 │   ├── screens/
-│   │   └── home_screen.dart      # Main screen: text input, counter, speed & controls
+│   │   └── home_screen.dart      # Liquid Glass main screen & synchronized reader
 │   ├── services/
-│   │   └── tts_controller.dart   # TTS engine lifecycle, loop control, wakelock, rate mapping
+│   │   ├── storage_service.dart  # SharedPreferences automatic local persistence
+│   │   └── tts_controller.dart   # TTS engine, word progress handler, loop control
+│   ├── theme/
+│   │   └── liquid_glass_theme.dart # iOS Liquid Glass palette, gradients, decorations
 │   └── widgets/
-│       └── voice_selector_dialog.dart # English voice selector modal
+│       ├── about_dialog.dart     # Liquid Glass "About Repeat Speaker" modal
+│       ├── app_logo.dart         # Custom vector continuous loop + soundwave logo
+│       ├── circular_media_controls.dart # Circular Play/Pause/Stop controls
+│       ├── liquid_glass_container.dart  # Frosted glass surfaces & ambient backdrop
+│       ├── voice_selector_sheet.dart    # Liquid Glass voice model selector sheet
+│       └── word_highlight_view.dart     # Synchronized real-time word highlight reader
 ├── test/
 │   └── widget_test.dart          # Automated UI & smoke test
-├── pubspec.yaml                  # Flutter dependencies (flutter_tts, wakelock_plus)
+├── pubspec.yaml                  # Flutter dependencies (v1.1.0+2)
 └── README.md
 ```
 
