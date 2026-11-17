@@ -1,7 +1,7 @@
 name: repeat_speaker
-description: "Repeat Speaker - An iOS-inspired Liquid Glass text-to-speech loop playback mobile app."
+description: "Repeat Speaker - A clean, minimal mobile app that speaks text aloud on an endless loop."
 publish_to: "none"
-version: 1.1.0+2
+version: 1.2.0+3
 
 environment:
   sdk: ">=3.0.0 <4.0.0"

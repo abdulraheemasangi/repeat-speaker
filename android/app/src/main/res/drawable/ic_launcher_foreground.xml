@@ -1,69 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-
-    <!-- Premium Repeat Speaker Infinity Acoustic Emblem -->
     <group
-        android:scaleX="0.72"
-        android:scaleY="0.72"
-        android:translateX="15.12"
-        android:translateY="15.12">
-
-        <!-- Outer Glowing Radial Rim -->
-        <path
-            android:fillColor="#00000000"
-            android:strokeColor="#6366F1"
-            android:strokeWidth="2.5"
-            android:pathData="M54,12 A42,42 0 1,1 53.9,12 Z"/>
-
-        <!-- Continuous Infinity Repeat Loop -->
-        <path
-            android:fillColor="#00000000"
-            android:strokeColor="#00F2FE"
-            android:strokeWidth="6"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round"
-            android:pathData="M34,44 C26,44 20,49 20,54 C20,59 26,64 34,64 C44,64 49,44 59,44 C67,44 73,49 73,54 C73,59 67,64 59,64 C49,64 44,44 34,44 Z"/>
-
-        <!-- Acoustic Sound Wave Right Inner -->
-        <path
-            android:fillColor="#00000000"
-            android:strokeColor="#818CF8"
-            android:strokeWidth="3.5"
-            android:strokeLineCap="round"
-            android:pathData="M78,45 C83,50 83,58 78,63"/>
-
-        <!-- Acoustic Sound Wave Right Outer -->
-        <path
-            android:fillColor="#00000000"
-            android:strokeColor="#A855F7"
-            android:strokeWidth="3"
-            android:strokeLineCap="round"
-            android:pathData="M85,39 C92,47 92,61 85,69"/>
-
-        <!-- Acoustic Sound Wave Left Inner -->
-        <path
-            android:fillColor="#00000000"
-            android:strokeColor="#818CF8"
-            android:strokeWidth="3.5"
-            android:strokeLineCap="round"
-            android:pathData="M15,45 C10,50 10,58 15,63"/>
-
-        <!-- Acoustic Sound Wave Left Outer -->
-        <path
-            android:fillColor="#00000000"
-            android:strokeColor="#A855F7"
-            android:strokeWidth="3"
-            android:strokeLineCap="round"
-            android:pathData="M8,39 C1,47 1,61 8,69"/>
-
-        <!-- Central Sparkle Core -->
+        android:scaleX="0.65"
+        android:scaleY="0.65"
+        android:translateX="18.9"
+        android:translateY="18.9">
         <path
             android:fillColor="#FFFFFF"
-            android:pathData="M46.5,54 A1.5,1.5 0 1,1 46.4,54 Z"/>
+            android:pathData="M31,34L17,34C13.69,34 11,36.69 11,40L11,62C11,65.31 13.69,68 17,68L23,68L23,62L17,62C15.9,62 15,61.1 15,60L15,42C15,40.9 15.9,40 17,40L31,40L31,46L41,37L31,28L31,34ZM77,74L91,74C94.31,74 97,71.31 97,68L97,46C97,42.69 94.31,40 91,40L85,40L85,46L91,46C92.1,46 93,46.9 93,48L93,66C93,67.1 92.1,68 91,68L77,68L77,62L67,71L77,80L77,74Z"/>
     </group>
 </vector>

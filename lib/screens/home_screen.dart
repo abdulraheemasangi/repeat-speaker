@@ -151,15 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
         _textController.text = data.text!;
       });
       StorageService.saveText(_textController.text);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Pasted from clipboard"),
-            behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 1),
-          ),
-        );
-      }
     }
   }
 
@@ -206,28 +197,14 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             const AppLogo(size: 32),
             const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Repeat Speaker",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    letterSpacing: 0.3,
-                    color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  ),
-                ),
-                Text(
-                  "LIQUID GLASS AUDIO",
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                    color: const Color(0xFF00F2FE).withValues(alpha: 0.85),
-                  ),
-                ),
-              ],
+            Text(
+              "Repeat Speaker",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                letterSpacing: 0.2,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
+              ),
             ),
           ],
         ),

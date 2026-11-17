@@ -112,25 +112,8 @@ class _WordHighlightViewState extends State<WordHighlightView> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF6366F1), // Royal Indigo
-                  Color(0xFF8B5CF6), // Violet
-                ],
-              ),
-              borderRadius: BorderRadius.circular(6),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x666366F1),
-                  blurRadius: 10,
-                  offset: Offset(0, 2),
-                ),
-                BoxShadow(
-                  color: Color(0x3300F2FE),
-                  blurRadius: 6,
-                  spreadRadius: 1,
-                ),
-              ],
+              color: const Color(0xFF6366F1),
+              borderRadius: BorderRadius.circular(5),
             ),
             child: Text(
               text.substring(start, end),

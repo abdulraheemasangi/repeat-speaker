@@ -9,21 +9,18 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('Repeat Speaker Liquid Glass UI smoke test', (
+  testWidgets('Repeat Speaker Minimal UI smoke test', (
     WidgetTester tester,
   ) async {
     final ttsController = TtsController();
     await tester.pumpWidget(RepeatSpeakerApp(ttsController: ttsController));
     await tester.pumpAndSettle();
 
-    // Verify AppBar title & branding
+    // Verify AppBar title
     expect(find.text('Repeat Speaker'), findsOneWidget);
-    expect(find.text('LIQUID GLASS AUDIO'), findsOneWidget);
 
-    // Verify media controls presence (Play icon, Stop icon, Reset icon)
+    // Verify presence of single Play button
     expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.stop_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.refresh_rounded), findsOneWidget);
 
     // Verify presence of playback speed tuning
     expect(find.textContaining('Playback Speed'), findsOneWidget);

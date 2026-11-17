@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build-apk:
-    name: Build & Release RepeatSpeaker.apk (v1.1.0)
+    name: Build & Release RepeatSpeaker.apk (v1.2.0)
     runs-on: ubuntu-latest
 
     steps:
@@ -69,26 +69,28 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: RepeatSpeaker.apk
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.1.0' }}
-          name: 'Repeat Speaker v1.1.0 – Liquid Glass & Word Highlighting Edition'
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.2.0' }}
+          name: 'Repeat Speaker v1.2.0 – Fast & Minimal Edition'
           body: |
-            ## Repeat Speaker v1.1.0 (Build 2) 🎙️✨
+            ## Repeat Speaker v1.2.0 (Build 3) ⚡🎙️
 
             ### What's New in this Release:
-            - 💎 **Apple iOS Liquid Glass UI:** Translucent frosted glass surfaces, glowing ambient depth, refined shadows, and buttery-smooth animations.
-            - 📖 **Real-Time Word Highlighting:** Synchronized word-by-word highlighting during text-to-speech loop playback.
-            - 🎙️ **5 Curated Voice Models:** Filtered to 5 natural, clear, studio-grade voices (US Studio, US Clarity, British Elegance, British Warmth, Australian Crisp).
-            - 💾 **Persistent Data & Settings:** Automatic retention of entered text, selected voice, playback speed, pause interval, and theme across app closures.
-            - ⏯️ **Circular Media Controls:** Large floating circular Play/Pause button with pulse halo, secondary Stop and Counter Reset controls.
+            - ⚡ **Zero-Lag Performance:** Completely removed heavy GPU blur operations and continuous background animation loops for butter-smooth 60–120fps responsiveness on Android.
+            - 🎯 **Single Play/Pause Button:** Replaced multiple playback buttons with a single, clean, prominent circular Play/Pause button.
+            - ✨ **Clean & Minimal Theme:** Removed excessive neon glow shadows and ambient orbs in favor of a sleek, minimalist Apple-style dark/light interface.
+            - 🎨 **Minimal App Logo:** Simplified brand logo to a crisp, professional icon.
+            - 📋 **Silent One-Tap Paste:** Removed the bottom "Pasted from clipboard" popup toast on paste.
+            - 📖 **Synchronized Word Highlighting:** Real-time word-by-word visual highlight during speech.
+            - 🎙️ **5 Curated Voices:** 5 natural, clear studio-grade voice models.
+            - 💾 **Persistent Data:** Automatic retention of text, voice, speed, and pause settings.
 
             ### Direct APK Download
-            - **[Download RepeatSpeaker.apk](https://github.com/${{ github.repository }}/releases/download/v1.1.0/RepeatSpeaker.apk)**
+            - **[Download RepeatSpeaker.apk](https://github.com/${{ github.repository }}/releases/download/v1.2.0/RepeatSpeaker.apk)**
 
             ### Installation Instructions
-            1. Download `RepeatSpeaker.apk` directly to your Android device.
-            2. Tap the downloaded APK in your notification bar or Files/Downloads folder.
-            3. If prompted, toggle on **"Allow from this source"**.
-            4. Tap **Install** (or **Update**) and launch the app!
+            1. Download `RepeatSpeaker.apk` directly to your Android phone.
+            2. Tap the downloaded APK in your notification bar or Downloads folder.
+            3. Tap **Install** (or **Update**) and launch!
           draft: false
           prerelease: false
           generate_release_notes: true
