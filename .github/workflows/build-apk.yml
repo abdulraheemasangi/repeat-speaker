@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build-apk:
-    name: Build & Release RepeatSpeaker.apk (v1.3.0)
+    name: Build & Release RepeatSpeaker.apk (v1.4.0)
     runs-on: ubuntu-latest
 
     steps:
@@ -69,21 +69,21 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: RepeatSpeaker.apk
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.3.0' }}
-          name: 'Repeat Speaker v1.3.0 – Bug Fixes & Performance Edition'
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.4.0' }}
+          name: 'Repeat Speaker v1.4.0 – Premium Liquid Glass & Vector Edition'
           body: |
-            ## Repeat Speaker v1.3.0 (Build 4) ⚡🎙️
+            ## Repeat Speaker v1.4.0 (Build 5)
 
             ### What's New in this Release:
-            - ⚡ **Instant Responsive Voice Switching:** Fixed voice selection lag. Tapping any voice now selects and displays instantly (0ms UI lag) using reactive state observers.
-            - 🔄 **Real-Time Dynamic Text Sync:** Fixed TTS speaking stale/default text. TTS now dynamically reads the latest edited text before every single repeat loop.
-            - 🎯 **Fixed Loop Counter & Configurable Limits:** Loop counter increments strictly after each speech cycle completes. Added target repetition limits (1x, 3x, 5x, 10x, 20x, or Endless ♾️) with clean automatic stop.
-            - 🎨 **Balanced Repeat Logo:** Refined circular repeat-loop icon with symmetrical curvature, tight balanced spacing, and crisp vector arrowheads.
-            - 🚀 **Performance Optimization:** Eliminated redundant rebuilds, memory leaks, and background redraws.
-            - 💾 **Reliable Local Persistence:** Retains text, chosen voice, playback speed, pause interval, and repetition limit across app restarts.
+            - **Luminous Pearlescent Liquid Glass Theme:** Soft, light, airy backgrounds with frosted translucent glass surfaces, specular highlights, and gentle diffused shadows.
+            - **Complete Emoji Removal & Pure Lucide Vector Icons:** All emoji characters removed from the user interface. Replaced with clean, crisp, resolution-independent vector icons with 2.0 stroke styling.
+            - **Redesigned Repeat Limit Stepper:** Dedicated glass card with tactile (+) and (−) increment/decrement buttons, an animated repetition count display, a seamless continuous-loop option, and quick preset pills.
+            - **Apple-Inspired Interactive Buttons:** Tactile circular glass media controls with smooth press animations, specular highlights, and subtle glass action pills.
+            - **Crisp Country Code Badges:** Replaced OS flag emojis in Voice Selection with sleek, modern geometric country code badges (US, GB, AU).
+            - **Enhanced Text Contrast & Readability:** High-contrast Slate typography for razor-sharp readability in both light and dark modes.
 
             ### Direct APK Download
-            - **[Download RepeatSpeaker.apk](https://github.com/${{ github.repository }}/releases/download/v1.3.0/RepeatSpeaker.apk)**
+            - **[Download RepeatSpeaker.apk](https://github.com/${{ github.repository }}/releases/download/v1.4.0/RepeatSpeaker.apk)**
 
             ### Installation Instructions
             1. Download `RepeatSpeaker.apk` directly to your Android phone.

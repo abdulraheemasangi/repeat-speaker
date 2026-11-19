@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../services/tts_controller.dart';
 import '../theme/liquid_glass_theme.dart';
+import 'app_icons.dart';
 
-/// Minimal, single Play/Pause media control for Repeat Speaker.
-/// Provides a single, thumb-friendly circular button without laggy animation loops.
-class CircularMediaControls extends StatelessWidget {
+/// Premium, single Play/Pause media control with Apple-inspired Liquid Glass styling.
+/// Features a tactile central circular button with gradient fill, specular highlights,
+/// smooth press feedback, and clean vector status indicators without emojis.
+class CircularMediaControls extends StatefulWidget {
   final PlaybackState playbackState;
   final VoidCallback onPlay;
   final VoidCallback onPause;
@@ -28,69 +30,179 @@ class CircularMediaControls extends StatelessWidget {
   });
 
   @override
+  State<CircularMediaControls> createState() => _CircularMediaControlsState();
+}
+
+class _CircularMediaControlsState extends State<CircularMediaControls> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
     final isPlaying =
-        playbackState == PlaybackState.playing ||
-        playbackState == PlaybackState.pausingBetweenLoops;
-    final isPaused = playbackState == PlaybackState.paused;
+        widget.playbackState == PlaybackState.playing ||
+        widget.playbackState == PlaybackState.pausingBetweenLoops;
+    final isPaused = widget.playbackState == PlaybackState.paused;
+    final isDark = widget.isDark;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Minimal Loop Counter Status Label
-        _buildStatusHeader(isPlaying, isPaused),
+        // 1. Refined Status Badge Header
+        _buildStatusHeader(isPlaying, isPaused, isDark),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
 
-        // ONLY A SINGLE PLAY / PAUSE BUTTON (As requested)
+        // 2. Central Play / Pause Button with Liquid Glass Halo
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Single Play / Pause Button
-            SizedBox(
-              width: 72,
-              height: 72,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (isPlaying) {
-                    onPause();
-                  } else {
-                    onPlay();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                  padding: EdgeInsets.zero,
-                  backgroundColor: isPlaying
-                      ? const Color(0xFFEF4444) // Clean Red for Pause
-                      : const Color(0xFF6366F1), // Clean Indigo for Play
-                  foregroundColor: Colors.white,
-                  elevation: 2,
-                ),
-                child: Icon(
-                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  size: 38,
-                  color: Colors.white,
+            GestureDetector(
+              onTapDown: (_) => setState(() => _isPressed = true),
+              onTapUp: (_) => setState(() => _isPressed = false),
+              onTapCancel: () => setState(() => _isPressed = false),
+              onTap: () {
+                if (isPlaying) {
+                  widget.onPause();
+                } else {
+                  widget.onPlay();
+                }
+              },
+              child: AnimatedScale(
+                scale: _isPressed ? 0.92 : 1.0,
+                duration: const Duration(milliseconds: 120),
+                curve: Curves.easeOutCubic,
+                child: Container(
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: isPlaying
+                        ? LiquidGlassTheme.pauseGradient
+                        : LiquidGlassTheme.playGradient,
+                    border: Border.all(
+                      color: const Color(0x66FFFFFF),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isPlaying
+                            ? const Color(0x59F43F5E)
+                            : const Color(0x594F46E5),
+                        blurRadius: 18,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 6),
+                      ),
+                      BoxShadow(
+                        color: isDark
+                            ? const Color(0x40000000)
+                            : const Color(0x1A0F172A),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: isPlaying
+                        ? AppIcon.pause(
+                            size: 30,
+                            color: Colors.white,
+                            strokeWidth: 3.2,
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.only(left: 3.0),
+                            child: AppIcon.play(
+                              size: 34,
+                              color: Colors.white,
+                              filled: true,
+                            ),
+                          ),
+                  ),
                 ),
               ),
             ),
           ],
         ),
 
-        // Subtle Stop / Reset text action if repeat count > 0 or paused
-        if (!isPlaying && repeatCount > 0) ...[
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: onResetCounter,
-            child: Text(
-              "Reset Counter",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+        // 3. Reset Counter / Stop Actions (Glass Pill)
+        if (!isPlaying && widget.repeatCount > 0) ...[
+          const SizedBox(height: 12),
+          InkWell(
+            onTap: widget.onResetCounter,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
                 color: isDark
-                    ? const Color(0x99FFFFFF)
-                    : const Color(0x99000000),
-                decoration: TextDecoration.underline,
+                    ? const Color(0x14FFFFFF)
+                    : const Color(0x66F1F5F9),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0x1FFFFFFF)
+                      : const Color(0x40CBD5E1),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppIcon.repeat(
+                    size: 13,
+                    color: isDark
+                        ? const Color(0xB3FFFFFF)
+                        : const Color(0xFF64748B),
+                    strokeWidth: 2.0,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    "Reset Counter",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? const Color(0xCCFFFFFF)
+                          : const Color(0xFF475569),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ] else if (isPaused) ...[
+          const SizedBox(height: 12),
+          InkWell(
+            onTap: widget.onStop,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF43F5E)
+                    .withValues(alpha: isDark ? 0.20 : 0.10),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFFF43F5E)
+                      .withValues(alpha: isDark ? 0.35 : 0.25),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppIcon.clear(
+                    size: 12,
+                    color: const Color(0xFFF43F5E),
+                    strokeWidth: 2.2,
+                  ),
+                  const SizedBox(width: 6),
+                  const Text(
+                    "Stop Playback",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFF43F5E),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -99,58 +211,91 @@ class CircularMediaControls extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusHeader(bool isPlaying, bool isPaused) {
+  Widget _buildStatusHeader(bool isPlaying, bool isPaused, bool isDark) {
     String status;
     Color dotColor;
+    Widget? statusIcon;
 
     if (isPlaying) {
-      if (playbackState == PlaybackState.pausingBetweenLoops) {
-        status = targetLoopLimit > 0
-            ? "Pausing before loop #${repeatCount + 1} of $targetLoopLimit"
-            : "Pausing before loop #${repeatCount + 1}";
+      if (widget.playbackState == PlaybackState.pausingBetweenLoops) {
+        status = widget.targetLoopLimit > 0
+            ? "Pausing before loop #${widget.repeatCount + 1} of ${widget.targetLoopLimit}"
+            : "Pausing before loop #${widget.repeatCount + 1}";
         dotColor = LiquidGlassTheme.amber;
+        statusIcon = AppIcon.timer(size: 13, color: dotColor, strokeWidth: 2.0);
       } else {
-        status = targetLoopLimit > 0
-            ? "Playing loop #${repeatCount + 1} of $targetLoopLimit"
-            : "Playing loop #${repeatCount + 1} (Endless)";
+        status = widget.targetLoopLimit > 0
+            ? "Playing loop #${widget.repeatCount + 1} of ${widget.targetLoopLimit}"
+            : "Playing loop #${widget.repeatCount + 1}";
         dotColor = LiquidGlassTheme.emerald;
+        statusIcon = AppIcon.volume(
+          size: 13,
+          color: dotColor,
+          strokeWidth: 2.0,
+        );
       }
     } else if (isPaused) {
-      status = targetLoopLimit > 0
-          ? "Paused at loop #${repeatCount + 1} of $targetLoopLimit"
-          : "Paused at loop #${repeatCount + 1}";
-      dotColor = LiquidGlassTheme.secondary;
+      status = widget.targetLoopLimit > 0
+          ? "Paused at loop #${widget.repeatCount + 1} of ${widget.targetLoopLimit}"
+          : "Paused at loop #${widget.repeatCount + 1}";
+      dotColor = LiquidGlassTheme.rose;
+      statusIcon = AppIcon.pause(size: 12, color: dotColor, strokeWidth: 2.2);
     } else {
-      if (repeatCount == 0) {
-        status = targetLoopLimit > 0
-            ? "Ready • Limit: ${targetLoopLimit}x"
-            : "Ready to repeat (Endless)";
+      if (widget.repeatCount == 0) {
+        status = widget.targetLoopLimit > 0
+            ? "Ready • Limit: ${widget.targetLoopLimit}×"
+            : "Ready to repeat";
       } else {
-        status = targetLoopLimit > 0 && repeatCount >= targetLoopLimit
-            ? "Completed target $repeatCount repetitions!"
-            : "Finished • Repeated $repeatCount times";
+        status =
+            widget.targetLoopLimit > 0 &&
+                widget.repeatCount >= widget.targetLoopLimit
+            ? "Target reached • Repeated ${widget.repeatCount} times"
+            : "Finished • Repeated ${widget.repeatCount} times";
       }
       dotColor = LiquidGlassTheme.primary;
+      statusIcon = widget.repeatCount > 0
+          ? AppIcon.check(size: 13, color: dotColor, strokeWidth: 2.2)
+          : AppIcon.repeat(size: 13, color: dotColor, strokeWidth: 2.0);
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: dotColor),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: dotColor.withValues(alpha: isDark ? 0.16 : 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: dotColor.withValues(alpha: isDark ? 0.30 : 0.20),
+          width: 1,
         ),
-        const SizedBox(width: 8),
-        Text(
-          status,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white : const Color(0xFF1E293B),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (statusIcon != null) ...[
+            statusIcon,
+            const SizedBox(width: 6),
+          ] else ...[
+            Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: dotColor,
+              ),
+            ),
+            const SizedBox(width: 7),
+          ],
+          Text(
+            status,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.1,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

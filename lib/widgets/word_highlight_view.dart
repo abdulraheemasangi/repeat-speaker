@@ -61,24 +61,14 @@ class _WordHighlightViewState extends State<WordHighlightView> {
     final end = widget.highlightEnd;
 
     final defaultTextColor = widget.isDark
-        ? const Color(0xFFE2E8F0)
-        : const Color(0xFF1E293B);
+        ? const Color(0xFFF1F5F9)
+        : const Color(0xFF0F172A);
 
     final baseStyle = TextStyle(
       fontSize: 18,
       height: 1.6,
       letterSpacing: 0.2,
       color: defaultTextColor,
-      fontFamily: 'Roboto',
-    );
-
-    final highlightStyle = TextStyle(
-      fontSize: 18,
-      height: 1.6,
-      fontWeight: FontWeight.bold,
-      color: Colors.white,
-      backgroundColor: const Color(0xFF6366F1).withValues(alpha: 0.75),
-      shadows: const [Shadow(color: Color(0xFF00F2FE), blurRadius: 10)],
     );
 
     List<InlineSpan> spans = [];
@@ -99,7 +89,7 @@ class _WordHighlightViewState extends State<WordHighlightView> {
           TextSpan(
             text: text.substring(0, start),
             style: baseStyle.copyWith(
-              color: defaultTextColor.withValues(alpha: 0.7),
+              color: defaultTextColor.withValues(alpha: 0.65),
             ),
           ),
         );
@@ -110,10 +100,17 @@ class _WordHighlightViewState extends State<WordHighlightView> {
         WidgetSpan(
           alignment: PlaceholderAlignment.middle,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1),
-              borderRadius: BorderRadius.circular(5),
+              color: const Color(0xFF4F46E5),
+              borderRadius: BorderRadius.circular(6),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x334F46E5),
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
             child: Text(
               text.substring(start, end),

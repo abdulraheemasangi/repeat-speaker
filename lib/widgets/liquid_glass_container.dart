@@ -63,7 +63,7 @@ class LiquidGlassContainer extends StatelessWidget {
   }
 }
 
-/// Minimal, clean background layer without heavy GPU radial blurs.
+/// Apple-inspired Liquid Glass background layer with soft luminous gradient.
 class LiquidGlassBackground extends StatelessWidget {
   final Widget child;
 
@@ -74,9 +74,11 @@ class LiquidGlassBackground extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      color: isDark
-          ? LiquidGlassTheme.darkBackground
-          : LiquidGlassTheme.lightBackground,
+      decoration: BoxDecoration(
+        gradient: isDark
+            ? LiquidGlassTheme.darkBackdropGradient
+            : LiquidGlassTheme.lightBackdropGradient,
+      ),
       child: child,
     );
   }

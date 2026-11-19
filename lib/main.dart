@@ -36,8 +36,8 @@ class _RepeatSpeakerAppState extends State<RepeatSpeakerApp> {
   @override
   void initState() {
     super.initState();
-    // Restore persistent theme mode (dark by default)
-    final savedMode = StorageService.getThemeMode(defaultMode: 'dark');
+    // Restore persistent theme mode (light by default for the new pearlescent Liquid Glass UI)
+    final savedMode = StorageService.getThemeMode(defaultMode: 'light');
     _themeMode = savedMode == 'light' ? ThemeMode.light : ThemeMode.dark;
   }
 

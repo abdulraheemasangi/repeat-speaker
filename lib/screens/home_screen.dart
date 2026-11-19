@@ -4,9 +4,12 @@ import 'package:flutter/services.dart';
 import '../services/storage_service.dart';
 import '../services/tts_controller.dart';
 import '../widgets/about_dialog.dart';
+import '../widgets/app_icons.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/circular_media_controls.dart';
+import '../widgets/country_badge.dart';
 import '../widgets/liquid_glass_container.dart';
+import '../widgets/repeat_limit_control.dart';
 import '../widgets/voice_selector_sheet.dart';
 import '../widgets/word_highlight_view.dart';
 
@@ -59,12 +62,12 @@ class _HomeScreenState extends State<HomeScreen> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.info_outline, color: Colors.white),
+                AppIcon.info(size: 18, color: Colors.white),
                 const SizedBox(width: 8),
                 Expanded(child: Text(error)),
               ],
             ),
-            backgroundColor: const Color(0xFFEF4444),
+            backgroundColor: const Color(0xFFE11D48),
             duration: const Duration(seconds: 4),
             action: SnackBarAction(
               label: "OK",
@@ -136,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
         duration: const Duration(seconds: 3),
         action: SnackBarAction(
           label: "UNDO",
-          textColor: const Color(0xFF00F2FE),
+          textColor: const Color(0xFF4F46E5),
           onPressed: () {
             setState(() {
               _textController.text = previousText;
@@ -169,12 +172,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String _formatSpeedLabel(double speed) {
-    if ((speed - 1.0).abs() < 0.05) return "1.0x (Normal)";
-    if (speed <= 0.6) return "${speed.toStringAsFixed(1)}x (Slow)";
-    if (speed < 1.0) return "${speed.toStringAsFixed(1)}x (Calm)";
-    if (speed <= 1.4) return "${speed.toStringAsFixed(1)}x (Brisk)";
-    if (speed <= 1.8) return "${speed.toStringAsFixed(1)}x (Fast)";
-    return "${speed.toStringAsFixed(1)}x (Double)";
+    if ((speed - 1.0).abs() < 0.05) return "1.0× Normal";
+    if (speed <= 0.6) return "${speed.toStringAsFixed(1)}× Slow";
+    if (speed < 1.0) return "${speed.toStringAsFixed(1)}× Calm";
+    if (speed <= 1.4) return "${speed.toStringAsFixed(1)}× Brisk";
+    if (speed <= 1.8) return "${speed.toStringAsFixed(1)}× Fast";
+    return "${speed.toStringAsFixed(1)}× Double";
   }
 
   @override
@@ -182,7 +185,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDark = widget.isDarkMode;
     final isPlaying = widget.ttsController.isPlaying;
     final isPaused = widget.ttsController.isPaused;
-    final isIdle = widget.ttsController.isIdle;
     final speed = widget.ttsController.speed;
     final pauseDuration = widget.ttsController.pauseDuration;
     final targetLoopLimit = widget.ttsController.targetLoopLimit;
@@ -202,14 +204,14 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const AppLogo(size: 32),
+            const AppLogo(size: 30),
             const SizedBox(width: 10),
             Text(
               "Repeat Speaker",
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
                 fontSize: 18,
-                letterSpacing: 0.2,
+                letterSpacing: -0.3,
                 color: isDark ? Colors.white : const Color(0xFF0F172A),
               ),
             ),
@@ -217,27 +219,47 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           // Voice Selector Action
-          IconButton(
+          _HeaderGlassButton(
             tooltip: "Voice Models",
-            icon: const Icon(Icons.record_voice_over_rounded, size: 22),
-            onPressed: _showVoiceSelector,
-          ),
-          // Theme Toggle Action
-          IconButton(
-            tooltip: isDark ? "Switch to Light Mode" : "Switch to Dark Mode",
-            icon: Icon(
-              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-              size: 22,
+            icon: AppIcon.mic(
+              size: 18,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              strokeWidth: 2.2,
             ),
+            onPressed: _showVoiceSelector,
+            isDark: isDark,
+          ),
+          const SizedBox(width: 6),
+          // Theme Toggle Action
+          _HeaderGlassButton(
+            tooltip: isDark ? "Switch to Light Mode" : "Switch to Dark Mode",
+            icon: isDark
+                ? AppIcon.sun(
+                    size: 18,
+                    color: const Color(0xFFFBBF24),
+                    strokeWidth: 2.2,
+                  )
+                : AppIcon.moon(
+                    size: 18,
+                    color: const Color(0xFF4F46E5),
+                    strokeWidth: 2.2,
+                  ),
             onPressed: widget.onToggleTheme,
+            isDark: isDark,
           ),
+          const SizedBox(width: 6),
           // About Dialog Action
-          IconButton(
+          _HeaderGlassButton(
             tooltip: "About",
-            icon: const Icon(Icons.info_outline_rounded, size: 22),
+            icon: AppIcon.info(
+              size: 18,
+              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              strokeWidth: 2.2,
+            ),
             onPressed: _showAboutDialog,
+            isDark: isDark,
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 14),
         ],
       ),
       body: LiquidGlassBackground(
@@ -263,14 +285,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Icon(
-                                      showHighlightReader
-                                          ? Icons.spatial_audio_rounded
-                                          : Icons.edit_note_rounded,
-                                      size: 18,
-                                      color: const Color(0xFF6366F1),
-                                    ),
-                                    const SizedBox(width: 6),
+                                    showHighlightReader
+                                        ? AppIcon.volume(
+                                            size: 16,
+                                            color: const Color(0xFF4F46E5),
+                                            strokeWidth: 2.2,
+                                          )
+                                        : AppIcon.edit(
+                                            size: 16,
+                                            color: const Color(0xFF4F46E5),
+                                            strokeWidth: 2.2,
+                                          ),
+                                    const SizedBox(width: 8),
                                     Text(
                                       showHighlightReader
                                           ? "Synchronized Playback"
@@ -278,6 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                         fontSize: 13,
+                                        letterSpacing: -0.2,
                                         color: isDark
                                             ? Colors.white
                                             : const Color(0xFF0F172A),
@@ -287,61 +314,50 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 const Spacer(),
                                 if (showHighlightReader)
-                                  TextButton.icon(
+                                  _GlassActionButton(
+                                    icon: AppIcon.edit(
+                                      size: 13,
+                                      color: const Color(0xFF0284C7),
+                                      strokeWidth: 2.2,
+                                    ),
+                                    label: "Edit",
+                                    accentColor: const Color(0xFF0284C7),
+                                    isDark: isDark,
                                     onPressed: () {
                                       setState(() => _forceEditMode = true);
                                     },
-                                    icon: const Icon(
-                                      Icons.edit_rounded,
-                                      size: 14,
-                                    ),
-                                    label: const Text(
-                                      "Edit",
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: const Color(0xFF00F2FE),
-                                      visualDensity: VisualDensity.compact,
-                                    ),
                                   )
                                 else ...[
-                                  TextButton.icon(
+                                  _GlassActionButton(
+                                    icon: AppIcon.paste(
+                                      size: 13,
+                                      color: const Color(0xFF4F46E5),
+                                      strokeWidth: 2.2,
+                                    ),
+                                    label: "Paste",
+                                    accentColor: const Color(0xFF4F46E5),
+                                    isDark: isDark,
                                     onPressed: isPlaying ? null : _handlePaste,
-                                    icon: const Icon(
-                                      Icons.paste_rounded,
-                                      size: 14,
-                                    ),
-                                    label: const Text(
-                                      "Paste",
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: const Color(0xFF6366F1),
-                                      visualDensity: VisualDensity.compact,
-                                    ),
                                   ),
-                                  TextButton.icon(
+                                  const SizedBox(width: 6),
+                                  _GlassActionButton(
+                                    icon: AppIcon.clear(
+                                      size: 13,
+                                      color: const Color(0xFFE11D48),
+                                      strokeWidth: 2.2,
+                                    ),
+                                    label: "Clear",
+                                    accentColor: const Color(0xFFE11D48),
+                                    isDark: isDark,
                                     onPressed: _textController.text.isEmpty
                                         ? null
                                         : _handleClear,
-                                    icon: const Icon(
-                                      Icons.clear_rounded,
-                                      size: 14,
-                                    ),
-                                    label: const Text(
-                                      "Clear",
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: const Color(0xFFEF4444),
-                                      visualDensity: VisualDensity.compact,
-                                    ),
                                   ),
                                 ],
                               ],
                             ),
 
-                            const Divider(height: 16, color: Color(0x26FFFFFF)),
+                            const Divider(height: 16, color: Color(0x1F94A3B8)),
 
                             // Dynamic Text Content: Editor vs Synchronized Highlighter
                             ConstrainedBox(
@@ -385,7 +401,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         hintStyle: TextStyle(
                                           color: isDark
                                               ? const Color(0x66FFFFFF)
-                                              : const Color(0x66000000),
+                                              : const Color(0x66475569),
                                           fontSize: 15,
                                         ),
                                         border: InputBorder.none,
@@ -406,9 +422,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     "Double-tap to edit",
                                     style: TextStyle(
                                       fontSize: 11,
+                                      fontWeight: FontWeight.w500,
                                       color: isDark
                                           ? const Color(0x66FFFFFF)
-                                          : const Color(0x66000000),
+                                          : const Color(0xFF94A3B8),
                                     ),
                                   )
                                 else
@@ -417,10 +434,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   "$wordCount words • $charCount characters",
                                   style: TextStyle(
                                     fontSize: 11,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.w600,
                                     color: isDark
                                         ? const Color(0x80FFFFFF)
-                                        : const Color(0x80000000),
+                                        : const Color(0xFF64748B),
                                   ),
                                 ),
                               ],
@@ -431,7 +448,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       const SizedBox(height: 12),
 
-                      // 2. Active Voice Model Quick Pill
+                      // 2. Active Voice Model Quick Card
                       LiquidGlassContainer(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -440,11 +457,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         onTap: _showVoiceSelector,
                         child: Row(
                           children: [
-                            Text(
-                              selectedVoice.flag,
-                              style: const TextStyle(fontSize: 20),
+                            CountryBadge(
+                              countryCode: selectedVoice.countryCode,
+                              isDark: isDark,
+                              size: 28,
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,7 +473,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         selectedVoice.title,
                                         style: TextStyle(
                                           fontSize: 14,
-                                          fontWeight: FontWeight.bold,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: -0.2,
                                           color: isDark
                                               ? Colors.white
                                               : const Color(0xFF0F172A),
@@ -465,44 +484,55 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 6,
-                                          vertical: 1,
+                                          vertical: 1.5,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF00F2FE)
-                                              .withValues(alpha: 0.15),
+                                          color: const Color(0xFF4F46E5)
+                                              .withValues(alpha: 0.12),
                                           borderRadius: BorderRadius.circular(
-                                            4,
+                                            6,
                                           ),
                                         ),
-                                        child: Text(
-                                          selectedVoice.qualityBadge,
-                                          style: const TextStyle(
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF00B4D8),
-                                          ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            AppIcon.sparkles(
+                                              size: 9,
+                                              color: const Color(0xFF4F46E5),
+                                            ),
+                                            const SizedBox(width: 3),
+                                            Text(
+                                              selectedVoice.qualityBadge,
+                                              style: const TextStyle(
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w700,
+                                                color: Color(0xFF4F46E5),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
+                                  const SizedBox(height: 2),
                                   Text(
                                     selectedVoice.subtitle,
                                     style: TextStyle(
                                       fontSize: 11,
+                                      fontWeight: FontWeight.w500,
                                       color: isDark
                                           ? const Color(0x80FFFFFF)
-                                          : const Color(0x80000000),
+                                          : const Color(0xFF64748B),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            Icon(
-                              Icons.chevron_right_rounded,
-                              size: 20,
+                            AppIcon.chevronRight(
+                              size: 18,
                               color: isDark
                                   ? const Color(0x66FFFFFF)
-                                  : const Color(0x66000000),
+                                  : const Color(0xFF94A3B8),
                             ),
                           ],
                         ),
@@ -510,29 +540,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       const SizedBox(height: 12),
 
-                      // 3. Playback Tuning Card (Speed & Pause Sliders)
+                      // 3. Playback Tuning & Repeat Limit Card
                       LiquidGlassContainer(
-                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Speed Slider Header
+                            // 1. Speed Slider Header
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(
-                                      Icons.speed_rounded,
+                                    AppIcon.speed(
                                       size: 16,
-                                      color: Color(0xFF6366F1),
+                                      color: const Color(0xFF4F46E5),
+                                      strokeWidth: 2.2,
                                     ),
-                                    const SizedBox(width: 6),
+                                    const SizedBox(width: 8),
                                     Text(
                                       "Playback Speed",
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 13,
+                                        letterSpacing: -0.2,
                                         color: isDark
                                             ? Colors.white
                                             : const Color(0xFF0F172A),
@@ -546,16 +577,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF6366F1)
-                                        .withValues(alpha: 0.18),
+                                    color: const Color(0xFF4F46E5)
+                                        .withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
                                     _formatSpeedLabel(speed),
                                     style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF6366F1),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF4F46E5),
                                     ),
                                   ),
                                 ),
@@ -563,7 +594,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SliderTheme(
                               data: SliderTheme.of(context).copyWith(
-                                trackHeight: 3,
+                                activeTrackColor: const Color(0xFF4F46E5),
+                                thumbColor: const Color(0xFF4F46E5),
+                                trackHeight: 3.5,
                                 thumbShape: const RoundSliderThumbShape(
                                   enabledThumbRadius: 7,
                                 ),
@@ -573,7 +606,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 min: 0.5,
                                 max: 2.0,
                                 divisions: 15,
-                                label: "${speed.toStringAsFixed(1)}x",
+                                label: "${speed.toStringAsFixed(1)}×",
                                 onChanged: (val) {
                                   widget.ttsController.setSpeed(
                                     val,
@@ -584,25 +617,26 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
 
-                            const Divider(height: 8, color: Color(0x1AFFFFFF)),
+                            const Divider(height: 12, color: Color(0x1F94A3B8)),
 
-                            // Pause Slider Header
+                            // 2. Pause Slider Header
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(
-                                      Icons.timer_outlined,
+                                    AppIcon.timer(
                                       size: 16,
-                                      color: Color(0xFF00F2FE),
+                                      color: const Color(0xFF0284C7),
+                                      strokeWidth: 2.2,
                                     ),
-                                    const SizedBox(width: 6),
+                                    const SizedBox(width: 8),
                                     Text(
                                       "Pause Between Repeats",
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 13,
+                                        letterSpacing: -0.2,
                                         color: isDark
                                             ? Colors.white
                                             : const Color(0xFF0F172A),
@@ -616,8 +650,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF00F2FE)
-                                        .withValues(alpha: 0.18),
+                                    color: const Color(0xFF0284C7)
+                                        .withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
@@ -625,9 +659,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ? "No pause (0s)"
                                         : "${pauseDuration.toStringAsFixed(1)}s",
                                     style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF00B4D8),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF0284C7),
                                     ),
                                   ),
                                 ),
@@ -635,9 +669,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             SliderTheme(
                               data: SliderTheme.of(context).copyWith(
-                                activeTrackColor: const Color(0xFF00F2FE),
-                                thumbColor: const Color(0xFF00F2FE),
-                                trackHeight: 3,
+                                activeTrackColor: const Color(0xFF0284C7),
+                                thumbColor: const Color(0xFF0284C7),
+                                trackHeight: 3.5,
                                 thumbShape: const RoundSliderThumbShape(
                                   enabledThumbRadius: 7,
                                 ),
@@ -654,106 +688,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
 
-                            const Divider(height: 8, color: Color(0x1AFFFFFF)),
+                            const Divider(height: 16, color: Color(0x1F94A3B8)),
 
-                            // Repeat Limit Selector
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.all_inclusive_rounded,
-                                      size: 16,
-                                      color: Color(0xFF10B981),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      "Repeat Limit",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 13,
-                                        color: isDark
-                                            ? Colors.white
-                                            : const Color(0xFF0F172A),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981)
-                                        .withValues(alpha: 0.18),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    targetLoopLimit == 0
-                                        ? "Endless (∞)"
-                                        : "${targetLoopLimit}x repetitions",
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF10B981),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              physics: const BouncingScrollPhysics(),
-                              child: Row(
-                                children: [0, 1, 3, 5, 10, 20].map((limit) {
-                                  final isSelected = targetLoopLimit == limit;
-                                  final label = limit == 0
-                                      ? "Endless ♾️"
-                                      : "${limit}x";
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 6),
-                                    child: ChoiceChip(
-                                      label: Text(label),
-                                      selected: isSelected,
-                                      onSelected: (selected) {
-                                        if (selected) {
-                                          widget.ttsController
-                                              .setTargetLoopLimit(limit);
-                                        }
-                                      },
-                                      labelStyle: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: isSelected
-                                            ? FontWeight.bold
-                                            : FontWeight.w500,
-                                        color: isSelected
-                                            ? Colors.white
-                                            : (isDark
-                                                  ? const Color(0xCCFFFFFF)
-                                                  : const Color(0xCC0F172A)),
-                                      ),
-                                      selectedColor: const Color(0xFF6366F1),
-                                      backgroundColor: isDark
-                                          ? const Color(0x1AFFFFFF)
-                                          : const Color(0x0A000000),
-                                      side: BorderSide(
-                                        color: isSelected
-                                            ? const Color(0xFF6366F1)
-                                            : (isDark
-                                                  ? const Color(0x1FFFFFFF)
-                                                  : const Color(0x1F000000)),
-                                      ),
-                                      visualDensity: VisualDensity.compact,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
+                            // 3. Brand New Repeat Limit Control (Stepper + Animated Display + Continuous Mode)
+                            RepeatLimitControl(
+                              currentLimit: targetLoopLimit,
+                              onChanged: (limit) {
+                                widget.ttsController.setTargetLoopLimit(limit);
+                              },
+                              isDark: isDark,
                             ),
                           ],
                         ),
@@ -768,7 +711,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: LiquidGlassContainer(
                   borderRadius: 28,
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
                   child: CircularMediaControls(
                     playbackState: widget.ttsController.playbackState,
                     repeatCount: widget.ttsController.repeatCount,
@@ -779,6 +722,110 @@ class _HomeScreenState extends State<HomeScreen> {
                     onStop: _handleStop,
                     onResetCounter: widget.ttsController.resetCounter,
                   ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tactile Circular Glass Header Button
+class _HeaderGlassButton extends StatelessWidget {
+  final Widget icon;
+  final VoidCallback onPressed;
+  final String tooltip;
+  final bool isDark;
+
+  const _HeaderGlassButton({
+    required this.icon,
+    required this.onPressed,
+    required this.tooltip,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          width: 36,
+          height: 36,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isDark ? const Color(0x1AFFFFFF) : const Color(0x80FFFFFF),
+            border: Border.all(
+              color: isDark ? const Color(0x26FFFFFF) : const Color(0x40CBD5E1),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isDark
+                    ? const Color(0x20000000)
+                    : const Color(0x0A0F172A),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: icon,
+        ),
+      ),
+    );
+  }
+}
+
+/// Refined Glass Action Button for Edit, Paste, Clear
+class _GlassActionButton extends StatelessWidget {
+  final Widget icon;
+  final String label;
+  final VoidCallback? onPressed;
+  final Color accentColor;
+  final bool isDark;
+
+  const _GlassActionButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    required this.accentColor,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isEnabled = onPressed != null;
+    return Opacity(
+      opacity: isEnabled ? 1.0 : 0.40,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: accentColor.withValues(alpha: isDark ? 0.16 : 0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: accentColor.withValues(alpha: isDark ? 0.30 : 0.20),
+              width: 1.0,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              icon,
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: accentColor,
                 ),
               ),
             ],

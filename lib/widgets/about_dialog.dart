@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'app_icons.dart';
 import 'app_logo.dart';
 
-/// Clean, minimal "About Repeat Speaker" Dialog
+/// Refined Apple-inspired "About Repeat Speaker" Dialog with Liquid Glass aesthetic.
 class AppAboutDialog extends StatelessWidget {
   const AppAboutDialog({super.key});
 
@@ -15,17 +16,17 @@ class AppAboutDialog extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Dialog(
-      backgroundColor: isDark ? const Color(0xFF181D2A) : Colors.white,
+      backgroundColor: isDark ? const Color(0xFF141A26) : Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         side: BorderSide(
-          color: isDark ? const Color(0x1FFFFFFF) : const Color(0xFFE2E8F0),
+          color: isDark ? const Color(0x26FFFFFF) : const Color(0x33CBD5E1),
           width: 1,
         ),
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 24),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+        padding: const EdgeInsets.fromLTRB(24, 26, 24, 22),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -39,26 +40,33 @@ class AppAboutDialog extends StatelessWidget {
               "Repeat Speaker",
               style: TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
                 color: isDark ? Colors.white : const Color(0xFF0F172A),
               ),
             ),
 
-            const SizedBox(height: 4),
+            const SizedBox(height: 5),
 
             // Version Pill
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1),
+                color: const Color(0xFF4F46E5)
+                    .withValues(alpha: isDark ? 0.25 : 0.12),
                 borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: const Color(0xFF4F46E5)
+                      .withValues(alpha: isDark ? 0.35 : 0.25),
+                  width: 1,
+                ),
               ),
               child: const Text(
-                "Version 1.3.0 (Build 4)",
+                "Version 1.4.0 (Build 5)",
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF4F46E5),
                 ),
               ),
             ),
@@ -67,59 +75,59 @@ class AppAboutDialog extends StatelessWidget {
 
             // Description
             Text(
-              "A clean, minimal text-to-speech loop playback app for memorization, speech prep, and pronunciation practice.",
+              "A premium, distraction-free speech repetition studio engineered for memorization, pronunciation mastery, and speech prep.",
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
                 height: 1.5,
                 color: isDark
                     ? const Color(0xB3FFFFFF)
-                    : const Color(0xB30F172A),
+                    : const Color(0xFF475569),
               ),
             ),
 
             const SizedBox(height: 16),
 
             _buildFeatureRow(
-              Icons.repeat_rounded,
-              "Loop Playback with Target Limits (1x, 3x, 5x, Endless)",
+              AppIcon.repeat(size: 16, color: const Color(0xFF4F46E5)),
+              "Liquid Glass Stepper with Custom Repeat Limits",
               isDark,
             ),
             _buildFeatureRow(
-              Icons.spellcheck_rounded,
-              "Real-time Word Highlighting & Dynamic Text Sync",
+              AppIcon.edit(size: 16, color: const Color(0xFF4F46E5)),
+              "Dynamic Text Synchronization & Word Highlighting",
               isDark,
             ),
             _buildFeatureRow(
-              Icons.record_voice_over_rounded,
-              "5 Curated Voices with Instant 0ms Switching",
+              AppIcon.mic(size: 16, color: const Color(0xFF4F46E5)),
+              "5 Studio Voice Models with 0ms Instant Switching",
               isDark,
             ),
             _buildFeatureRow(
-              Icons.save_rounded,
-              "Automatic Persistence for Text, Voice & Settings",
+              AppIcon.check(size: 16, color: const Color(0xFF4F46E5)),
+              "Pure Vector Icons with Zero Emoji Dependencies",
               isDark,
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 22),
 
             // Close Button
             SizedBox(
               width: double.infinity,
-              height: 44,
+              height: 46,
               child: ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
+                  backgroundColor: const Color(0xFF4F46E5),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
                   elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 child: const Text(
-                  "Close",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  "Done",
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                 ),
               ),
             ),
@@ -129,21 +137,22 @@ class AppAboutDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureRow(IconData icon, String text, bool isDark) {
+  Widget _buildFeatureRow(Widget icon, String text, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: const Color(0xFF6366F1)),
-          const SizedBox(width: 8),
+          icon,
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
                 fontSize: 12,
+                fontWeight: FontWeight.w500,
                 color: isDark
                     ? const Color(0xCCFFFFFF)
-                    : const Color(0xCC0F172A),
+                    : const Color(0xFF334155),
               ),
             ),
           ),

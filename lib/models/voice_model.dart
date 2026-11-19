@@ -5,7 +5,7 @@ class CuratedVoice {
   final String title;
   final String subtitle;
   final String locale;
-  final String flag;
+  final String countryCode;
   final String gender;
   final String qualityBadge;
   final String samplePreview;
@@ -17,12 +17,15 @@ class CuratedVoice {
     required this.title,
     required this.subtitle,
     required this.locale,
-    required this.flag,
+    required this.countryCode,
     required this.gender,
     required this.qualityBadge,
     required this.samplePreview,
     this.matchedNativeName,
   });
+
+  /// Backward-compatible alias
+  String get flag => countryCode;
 
   /// The 5 official curated voice models for Repeat Speaker
   static List<CuratedVoice> getCuratedList() {
@@ -32,7 +35,7 @@ class CuratedVoice {
         title: 'US Studio',
         subtitle: 'Natural, articulate American studio tone',
         locale: 'en-US',
-        flag: '🇺🇸',
+        countryCode: 'US',
         gender: 'Female',
         qualityBadge: 'Studio HD',
         samplePreview: 'Hello! I am your US Studio voice for smooth, natural repeat listening.',
@@ -42,7 +45,7 @@ class CuratedVoice {
         title: 'US Clarity',
         subtitle: 'Deep, focused American narrator',
         locale: 'en-US',
-        flag: '🇺🇸',
+        countryCode: 'US',
         gender: 'Male',
         qualityBadge: 'Neural Audio',
         samplePreview: 'Hello! I am your US Clarity voice, built for clear pronunciation and focus.',
@@ -52,7 +55,7 @@ class CuratedVoice {
         title: 'British Elegance',
         subtitle: 'Sophisticated, classic British pronunciation',
         locale: 'en-GB',
-        flag: '🇬🇧',
+        countryCode: 'GB',
         gender: 'Female',
         qualityBadge: 'Natural HD',
         samplePreview: 'Greetings! I am British Elegance, providing clear and refined phrasing.',
@@ -62,7 +65,7 @@ class CuratedVoice {
         title: 'British Warmth',
         subtitle: 'Warm, calm, authoritative British cadence',
         locale: 'en-GB',
-        flag: '🇬🇧',
+        countryCode: 'GB',
         gender: 'Male',
         qualityBadge: 'Studio Grade',
         samplePreview:
@@ -73,10 +76,10 @@ class CuratedVoice {
         title: 'Australian Crisp',
         subtitle: 'Bright, friendly Australian cadence',
         locale: 'en-AU',
-        flag: '🇦🇺',
+        countryCode: 'AU',
         gender: 'Natural',
         qualityBadge: 'Ultra Clear',
-        samplePreview: "G'day! I am Australian Crisp, ready to loop your phrases effortlessly.",
+        samplePreview: "Good day! I am Australian Crisp, ready to loop your phrases effortlessly.",
       ),
     ];
   }
