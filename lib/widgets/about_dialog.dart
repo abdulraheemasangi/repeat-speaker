@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'app_icons.dart';
 import 'app_logo.dart';
 
 /// Refined Apple-inspired "About Repeat Speaker" Dialog with Liquid Glass aesthetic.
@@ -62,7 +61,7 @@ class AppAboutDialog extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                "Version 1.5.0 (Build 6)",
+                "Version 1.6.0 (Build 7)",
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -89,23 +88,39 @@ class AppAboutDialog extends StatelessWidget {
             const SizedBox(height: 16),
 
             _buildFeatureRow(
-              AppIcon.repeat(size: 16, color: const Color(0xFF4F46E5)),
-              "Liquid Glass Stepper with Custom Repeat Limits",
+              const Icon(
+                Icons.repeat_rounded,
+                size: 18,
+                color: Color(0xFF4F46E5),
+              ),
+              "Horizontal Chip Repeat Limits with Endless loop",
               isDark,
             ),
             _buildFeatureRow(
-              AppIcon.edit(size: 16, color: const Color(0xFF4F46E5)),
+              const Icon(
+                Icons.edit_note_rounded,
+                size: 18,
+                color: Color(0xFF4F46E5),
+              ),
               "Dynamic Text Synchronization & Word Highlighting",
               isDark,
             ),
             _buildFeatureRow(
-              AppIcon.mic(size: 16, color: const Color(0xFF4F46E5)),
+              const Icon(
+                Icons.record_voice_over_rounded,
+                size: 18,
+                color: Color(0xFF4F46E5),
+              ),
               "5 Studio Voice Models with 0ms Instant Switching",
               isDark,
             ),
             _buildFeatureRow(
-              AppIcon.check(size: 16, color: const Color(0xFF4F46E5)),
-              "Pure Vector Icons with Zero Emoji Dependencies",
+              const Icon(
+                Icons.check_circle_outline_rounded,
+                size: 18,
+                color: Color(0xFF4F46E5),
+              ),
+              "Original Rounded Material Vector Icons",
               isDark,
             ),
 

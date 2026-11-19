@@ -1,19 +1,19 @@
-# Repeat Speaker (v1.5.0)
+# Repeat Speaker (v1.6.0)
 
 A premium, distraction-free speech repetition studio built with Flutter. It lets you type or paste English text and speaks it aloud in an endless or targeted repetition loop with synchronized real-time word highlighting.
 
 ---
 
-## Version 1.5.0 Highlights
+## Version 1.6.0 Highlights
 
+- **Restored Original Material Vector Icons:** Restored all familiar, crisp, rounded vector icons (`Icons.*_rounded`) across the entire app (AppBar, Cards, Repeat Chips, Media Controls, and Voice Selector).
+- **Lighter Aesthetic for Buttons & Surfaces:** Clean, soft, luminous background and lighter glass buttons for a fresh, elegant look.
+- **Restored Clean Horizontal Repeat Limit Pills:** Restored the favorite sleek horizontal chip selector with crisp vector icons (Endless, 1x, 3x, 5x, 10x, 20x, 50x) with zero emojis.
 - **Fixed Voice Preview & Background Collision:** Opening Voice Models or listening to voice samples now automatically pauses background playback with zero audio overlap.
 - **Eliminated Rapid Runaway Counter Bug:** Added an aborted-utterance timing safeguard to ensure the repeat loop counter never inflates on interrupted speech.
-- **Restored Clean Horizontal Repeat Limit Pills:** Restored the favorite sleek horizontal chip selector with crisp SVG icons (Continuous, 1x, 3x, 5x, 10x, 20x, 50x) without emojis.
-- **Lighter Aesthetic for Buttons & Surfaces:** Clean, soft, luminous background and lighter glass buttons for a fresh, elegant look.
 - **Single-Run Release Workflow:** Optimized CI release trigger to run once per release tag.
-- **Complete Emoji Removal & Pure Lucide Vector Icons:** All emoji characters removed from the user interface. Replaced with clean, crisp, resolution-independent vector icons with 2.0 stroke styling.
 - **Apple-Inspired Interactive Buttons:** Tactile circular glass media controls with smooth press animations, specular highlights, and subtle glass action pills.
-- **Crisp Country Code Badges:** Replaced OS flag emojis in Voice Selection with sleek, modern geometric country code badges (US, GB, AU).
+- **Crisp Country Code Badges:** Sleek, modern geometric country code badges (US, GB, AU).
 - **Dynamic Text Synchronization:** Engine dynamically reads the latest text directly from the text editor before each repetition.
 - **5 Curated Studio Voice Models:** Standardized to 5 natural, clear studio-grade voices with 0ms instant switching.
 - **Reliable Local Persistence:** Automatically remembers entered text, selected voice model, playback speed, pause interval, and repetition limit across app restarts.
@@ -26,7 +26,7 @@ A premium, distraction-free speech repetition studio built with Flutter. It lets
 
 Download the pre-compiled APK directly from GitHub Releases:
 
-### [Download Latest RepeatSpeaker.apk (v1.5.0)](https://github.com/abdulraheemasangi/repeat-speaker/releases/latest)
+### [Download Latest RepeatSpeaker.apk (v1.6.0)](https://github.com/abdulraheemasangi/repeat-speaker/releases/latest)
 
 ### How to Install on your Android Phone:
 1. Open the [Releases](https://github.com/abdulraheemasangi/repeat-speaker/releases/latest) page in Chrome on your Android phone.

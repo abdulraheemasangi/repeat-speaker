@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../models/voice_model.dart';
 import '../services/tts_controller.dart';
-import '../theme/liquid_glass_theme.dart';
-import 'app_icons.dart';
 import 'country_badge.dart';
 
-/// Refined, Apple-inspired bottom sheet for selecting among the 5 curated voice models.
+/// Clean bottom sheet for selecting among the 5 curated voice models.
 /// Completely free of emojis, featuring crisp vector country badges and 0ms reactive updates.
 class VoiceSelectorSheet extends StatelessWidget {
   final TtsController ttsController;
@@ -85,10 +83,10 @@ class VoiceSelectorSheet extends StatelessWidget {
                               .withValues(alpha: isDark ? 0.20 : 0.10),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: AppIcon.mic(
-                          size: 18,
-                          color: const Color(0xFF6366F1),
-                          strokeWidth: 2.2,
+                        child: const Icon(
+                          Icons.record_voice_over_rounded,
+                          size: 20,
+                          color: Color(0xFF6366F1),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -99,8 +97,7 @@ class VoiceSelectorSheet extends StatelessWidget {
                             "Voice Models",
                             style: TextStyle(
                               fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.3,
+                              fontWeight: FontWeight.bold,
                               color: isDark
                                   ? Colors.white
                                   : const Color(0xFF0F172A),
@@ -124,18 +121,11 @@ class VoiceSelectorSheet extends StatelessWidget {
                     onPressed: () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFF6366F1),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
                     ),
                     child: const Text(
                       "Done",
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
                     ),
@@ -161,8 +151,7 @@ class VoiceSelectorSheet extends StatelessWidget {
                       ttsController.selectCuratedVoice(voice);
                     },
                     borderRadius: BorderRadius.circular(16),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 160),
+                    child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 12,
@@ -183,15 +172,6 @@ class VoiceSelectorSheet extends StatelessWidget {
                                     : const Color(0xFFE2E8F0)),
                           width: isSelected ? 1.5 : 1.0,
                         ),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: const Color(0x266366F1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ]
-                            : null,
                       ),
                       child: Row(
                         children: [
@@ -215,7 +195,7 @@ class VoiceSelectorSheet extends StatelessWidget {
                                       voice.title,
                                       style: TextStyle(
                                         fontSize: 15,
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.bold,
                                         color: isDark
                                             ? Colors.white
                                             : const Color(0xFF0F172A),
@@ -232,23 +212,13 @@ class VoiceSelectorSheet extends StatelessWidget {
                                             .withValues(alpha: 0.12),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          AppIcon.sparkles(
-                                            size: 9,
-                                            color: const Color(0xFF6366F1),
-                                          ),
-                                          const SizedBox(width: 3),
-                                          Text(
-                                            voice.qualityBadge,
-                                            style: const TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w700,
-                                              color: Color(0xFF6366F1),
-                                            ),
-                                          ),
-                                        ],
+                                      child: Text(
+                                        voice.qualityBadge,
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF6366F1),
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -269,28 +239,16 @@ class VoiceSelectorSheet extends StatelessWidget {
                           ),
 
                           // Preview Audio Sample Button
-                          Tooltip(
-                            message: "Preview Voice",
-                            child: InkWell(
-                              onTap: () => ttsController.previewVoice(voice),
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFF6366F1)
-                                      .withValues(alpha: isDark ? 0.18 : 0.08),
-                                ),
-                                child: AppIcon.volume(
-                                  size: 16,
-                                  color: const Color(0xFF6366F1),
-                                  strokeWidth: 2.2,
-                                ),
-                              ),
-                            ),
+                          IconButton(
+                            tooltip: "Listen to sample",
+                            icon: const Icon(Icons.volume_up_rounded, size: 20),
+                            color: const Color(0xFF6366F1),
+                            onPressed: () {
+                              ttsController.previewVoice(voice);
+                            },
                           ),
 
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 4),
 
                           // Selection Radio / Checkmark
                           Container(
@@ -311,12 +269,10 @@ class VoiceSelectorSheet extends StatelessWidget {
                               ),
                             ),
                             child: isSelected
-                                ? Center(
-                                    child: AppIcon.check(
-                                      size: 12,
-                                      color: Colors.white,
-                                      strokeWidth: 2.8,
-                                    ),
+                                ? const Icon(
+                                    Icons.check,
+                                    size: 14,
+                                    color: Colors.white,
                                   )
                                 : null,
                           ),

@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build-apk:
-    name: Build & Release RepeatSpeaker.apk (v1.5.0)
+    name: Build & Release RepeatSpeaker.apk (v1.6.0)
     runs-on: ubuntu-latest
 
     steps:
@@ -66,20 +66,21 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: RepeatSpeaker.apk
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.5.0' }}
-          name: 'Repeat Speaker v1.5.0 – Lighter Theme & Speech Engine Polish'
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.6.0' }}
+          name: 'Repeat Speaker v1.6.0 – Restored Original Vector Icons & Lighter Aesthetic'
           body: |
-            ## Repeat Speaker v1.5.0 (Build 6)
+            ## Repeat Speaker v1.6.0 (Build 7)
 
             ### What's New in this Release:
-            - **Fixed Voice Preview & Background Collision Bug:** Opening Voice Models or listening to voice samples now automatically pauses background playback with zero audio overlap.
-            - **Eliminated Rapid Runaway Counter Bug:** Added an aborted-utterance timing safeguard to ensure the repeat loop counter never inflates on interrupted speech.
-            - **Restored Clean Horizontal Repeat Limit Pills:** Restored the favorite sleek horizontal chip selector with crisp SVG icons (Continuous, 1x, 3x, 5x, 10x, 20x, 50x) without emojis.
+            - **Restored Original Material Vector Icons:** Restored all familiar, crisp, rounded vector icons (`Icons.*_rounded`) across the entire app (AppBar, Cards, Repeat Chips, Media Controls, and Voice Selector).
             - **Lighter Aesthetic for Buttons & Surfaces:** Clean, soft, luminous background and lighter glass buttons for a fresh, elegant look.
-            - **Fixed Workflow Duplicate Trigger:** Optimized CI release trigger to run once per release.
+            - **Restored Clean Horizontal Repeat Limit Pills:** Restored the favorite sleek horizontal chip selector with crisp vector icons (Endless, 1x, 3x, 5x, 10x, 20x, 50x) with zero emojis.
+            - **Fixed Voice Preview & Background Collision:** Opening Voice Models or listening to voice samples automatically pauses background playback with zero audio overlap.
+            - **Eliminated Rapid Runaway Counter Bug:** Aborted-utterance timing safeguard prevents counter inflation on interrupted speech.
+            - **Single-Trigger CI Workflow:** Optimized CI release trigger to run once on release tags.
 
             ### Direct APK Download
-            - **[Download RepeatSpeaker.apk](https://github.com/${{ github.repository }}/releases/download/v1.5.0/RepeatSpeaker.apk)**
+            - **[Download RepeatSpeaker.apk](https://github.com/${{ github.repository }}/releases/download/v1.6.0/RepeatSpeaker.apk)**
 
             ### Installation Instructions
             1. Download `RepeatSpeaker.apk` directly to your Android phone.
