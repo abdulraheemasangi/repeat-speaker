@@ -1,7 +1,7 @@
 name: repeat_speaker
 description: "Repeat Speaker - A clean, minimal mobile app that speaks text aloud on an endless loop."
 publish_to: "none"
-version: 1.4.0+5
+version: 1.5.0+6
 
 environment:
   sdk: ">=3.0.0 <4.0.0"

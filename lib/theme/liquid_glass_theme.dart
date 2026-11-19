@@ -12,18 +12,18 @@ class LiquidGlassTheme {
   static const Color amber = Color(0xFFF59E0B); // Amber
   static const Color rose = Color(0xFFF43F5E); // Soft Rose
 
-  // Light Mode (Luminous Pearlescent Glass)
-  static const Color lightBackground = Color(0xFFF6F8FC);
-  static const Color lightBackgroundSubtle = Color(0xFFEDF2F7);
+  // Light Mode (Luminous Soft Pearlescent Glass)
+  static const Color lightBackground = Color(0xFFFAFBFC);
+  static const Color lightBackgroundSubtle = Color(0xFFF1F5F9);
   static const Color lightSurface = Color(
-    0xF5FFFFFF,
-  ); // 96% White Frosted Glass
+    0xF8FFFFFF,
+  ); // 97% White Frosted Glass
   static const Color lightSurfaceSubtle = Color(
-    0x99F1F5F9,
-  ); // 60% Frosted Slate
+    0xB3F1F5F9,
+  ); // 70% Frosted Slate
   static const Color lightBorder = Color(0x33CBD5E1); // 20% Subtle Slate
   static const Color lightBorderHighlight = Color(
-    0x80FFFFFF,
+    0x99FFFFFF,
   ); // Specular Highlight
 
   // Dark Mode (Frosted Midnight Obsidian)
@@ -43,7 +43,7 @@ class LiquidGlassTheme {
   static const Color darkTextSecondary = Color(0xFF94A3B8); // Slate 400
   static const Color darkTextTertiary = Color(0xFF64748B); // Slate 500
 
-  // Gradients
+  // Gradients (Lighter, Fresh & Elegant)
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [primary, primaryLight],
     begin: Alignment.topLeft,
@@ -51,19 +51,19 @@ class LiquidGlassTheme {
   );
 
   static const LinearGradient playGradient = LinearGradient(
-    colors: [Color(0xFF4F46E5), Color(0xFF3B82F6)],
+    colors: [Color(0xFF6366F1), Color(0xFF38BDF8)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient pauseGradient = LinearGradient(
-    colors: [Color(0xFFE11D48), Color(0xFFF43F5E)],
+    colors: [Color(0xFFF43F5E), Color(0xFFFB7185)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient lightBackdropGradient = LinearGradient(
-    colors: [Color(0xFFF8FAFC), Color(0xFFEEF3F8)],
+    colors: [Color(0xFFFAFBFC), Color(0xFFF1F5F9)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );

@@ -14,6 +14,10 @@ class VoiceSelectorSheet extends StatelessWidget {
   const VoiceSelectorSheet({super.key, required this.ttsController});
 
   static void show(BuildContext context, TtsController controller) {
+    // Automatically pause playback so background speech doesn't clash with voice previews
+    if (controller.isPlaying) {
+      controller.pauseLoop();
+    }
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,

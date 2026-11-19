@@ -62,7 +62,7 @@ class AppAboutDialog extends StatelessWidget {
                 ),
               ),
               child: const Text(
-                "Version 1.4.0 (Build 5)",
+                "Version 1.5.0 (Build 6)",
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,

@@ -220,11 +220,19 @@ class TtsController extends ChangeNotifier {
   }
 
   /// Speaks a quick sample preview for the voice selector.
+  /// Strictly halts any active repeat loop before speaking preview,
+  /// preventing audio collision and loop runaway.
   Future<void> previewVoice(CuratedVoice voice) async {
-    final wasPlaying = isPlaying;
-    if (wasPlaying) {
-      await pauseLoop();
-    }
+    // 1. Invalidate any active background loop completely
+    _playbackState = PlaybackState.paused;
+    _loopSessionId++;
+    _clearHighlight();
+    notifyListeners();
+
+    try {
+      await _tts.stop();
+    } catch (_) {}
+
     try {
       await _applyVoiceToEngine(voice);
       await _tts.speak(voice.samplePreview);
@@ -306,13 +314,15 @@ class TtsController extends ChangeNotifier {
       _clearHighlight();
       notifyListeners();
 
-      // 2. Speak the phrase
+      // 2. Speak the phrase with timing safeguard
+      final stopwatch = Stopwatch()..start();
       try {
         await _tts.speak(phrase);
       } catch (e) {
         _errorMessage = "Playback error: $e";
         break;
       }
+      stopwatch.stop();
 
       // Check if paused or stopped while speaking
       if (_playbackState != PlaybackState.playing ||
@@ -320,12 +330,14 @@ class TtsController extends ChangeNotifier {
         break;
       }
 
-      // If speech was interrupted specifically to apply speed or voice change immediately
-      if (_isRestartRequested) {
+      // If speech was interrupted, aborted, or returned instantaneously (< 350ms)
+      // (such as when switching voices or stopping engine), do NOT increment loop count!
+      if (_isRestartRequested || stopwatch.elapsedMilliseconds < 350) {
+        _isRestartRequested = false;
         continue;
       }
 
-      // 3. INCREMENT LOOP COUNT ONLY AFTER SUCCESSFUL COMPLETION
+      // 3. INCREMENT LOOP COUNT ONLY AFTER GENUINE SUCCESSFUL COMPLETION
       _repeatCount++;
       notifyListeners();
 
