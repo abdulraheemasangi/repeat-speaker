@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build-apk:
-    name: Build & Release RepeatSpeaker.apk (v1.2.0)
+    name: Build & Release RepeatSpeaker.apk (v1.3.0)
     runs-on: ubuntu-latest
 
     steps:
@@ -69,23 +69,21 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: RepeatSpeaker.apk
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.2.0' }}
-          name: 'Repeat Speaker v1.2.0 – Fast & Minimal Edition'
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.3.0' }}
+          name: 'Repeat Speaker v1.3.0 – Bug Fixes & Performance Edition'
           body: |
-            ## Repeat Speaker v1.2.0 (Build 3) ⚡🎙️
+            ## Repeat Speaker v1.3.0 (Build 4) ⚡🎙️
 
             ### What's New in this Release:
-            - ⚡ **Zero-Lag Performance:** Completely removed heavy GPU blur operations and continuous background animation loops for butter-smooth 60–120fps responsiveness on Android.
-            - 🎯 **Single Play/Pause Button:** Replaced multiple playback buttons with a single, clean, prominent circular Play/Pause button.
-            - ✨ **Clean & Minimal Theme:** Removed excessive neon glow shadows and ambient orbs in favor of a sleek, minimalist Apple-style dark/light interface.
-            - 🎨 **Minimal App Logo:** Simplified brand logo to a crisp, professional icon.
-            - 📋 **Silent One-Tap Paste:** Removed the bottom "Pasted from clipboard" popup toast on paste.
-            - 📖 **Synchronized Word Highlighting:** Real-time word-by-word visual highlight during speech.
-            - 🎙️ **5 Curated Voices:** 5 natural, clear studio-grade voice models.
-            - 💾 **Persistent Data:** Automatic retention of text, voice, speed, and pause settings.
+            - ⚡ **Instant Responsive Voice Switching:** Fixed voice selection lag. Tapping any voice now selects and displays instantly (0ms UI lag) using reactive state observers.
+            - 🔄 **Real-Time Dynamic Text Sync:** Fixed TTS speaking stale/default text. TTS now dynamically reads the latest edited text before every single repeat loop.
+            - 🎯 **Fixed Loop Counter & Configurable Limits:** Loop counter increments strictly after each speech cycle completes. Added target repetition limits (1x, 3x, 5x, 10x, 20x, or Endless ♾️) with clean automatic stop.
+            - 🎨 **Balanced Repeat Logo:** Refined circular repeat-loop icon with symmetrical curvature, tight balanced spacing, and crisp vector arrowheads.
+            - 🚀 **Performance Optimization:** Eliminated redundant rebuilds, memory leaks, and background redraws.
+            - 💾 **Reliable Local Persistence:** Retains text, chosen voice, playback speed, pause interval, and repetition limit across app restarts.
 
             ### Direct APK Download
-            - **[Download RepeatSpeaker.apk](https://github.com/${{ github.repository }}/releases/download/v1.2.0/RepeatSpeaker.apk)**
+            - **[Download RepeatSpeaker.apk](https://github.com/${{ github.repository }}/releases/download/v1.3.0/RepeatSpeaker.apk)**
 
             ### Installation Instructions
             1. Download `RepeatSpeaker.apk` directly to your Android phone.

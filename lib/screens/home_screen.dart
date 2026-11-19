@@ -96,9 +96,12 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _forceEditMode = false);
 
     if (widget.ttsController.isPaused) {
-      widget.ttsController.resumeLoop();
+      widget.ttsController.resumeLoop(latestText: text);
     } else {
-      widget.ttsController.startLoop(text: text);
+      widget.ttsController.startLoop(
+        text: text,
+        textSupplier: () => _textController.text.trim(),
+      );
     }
   }
 
@@ -124,6 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _forceEditMode = true;
     });
     StorageService.saveText('');
+    widget.ttsController.updateText('');
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -138,6 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _textController.text = previousText;
             });
             StorageService.saveText(previousText);
+            widget.ttsController.updateText(previousText);
           },
         ),
       ),
@@ -151,6 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _textController.text = data.text!;
       });
       StorageService.saveText(_textController.text);
+      widget.ttsController.updateText(_textController.text);
     }
   }
 
@@ -179,6 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isIdle = widget.ttsController.isIdle;
     final speed = widget.ttsController.speed;
     final pauseDuration = widget.ttsController.pauseDuration;
+    final targetLoopLimit = widget.ttsController.targetLoopLimit;
     final selectedVoice = widget.ttsController.selectedCuratedVoice;
 
     final text = _textController.text;
@@ -363,6 +370,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       textInputAction: TextInputAction.newline,
                                       onChanged: (val) {
                                         StorageService.saveText(val);
+                                        widget.ttsController.updateText(val);
                                         setState(() {});
                                       },
                                       style: TextStyle(
@@ -645,6 +653,108 @@ class _HomeScreenState extends State<HomeScreen> {
                                 },
                               ),
                             ),
+
+                            const Divider(height: 8, color: Color(0x1AFFFFFF)),
+
+                            // Repeat Limit Selector
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.all_inclusive_rounded,
+                                      size: 16,
+                                      color: Color(0xFF10B981),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      "Repeat Limit",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                        color: isDark
+                                            ? Colors.white
+                                            : const Color(0xFF0F172A),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981)
+                                        .withValues(alpha: 0.18),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    targetLoopLimit == 0
+                                        ? "Endless (∞)"
+                                        : "${targetLoopLimit}x repetitions",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF10B981),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              child: Row(
+                                children: [0, 1, 3, 5, 10, 20].map((limit) {
+                                  final isSelected = targetLoopLimit == limit;
+                                  final label = limit == 0
+                                      ? "Endless ♾️"
+                                      : "${limit}x";
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 6),
+                                    child: ChoiceChip(
+                                      label: Text(label),
+                                      selected: isSelected,
+                                      onSelected: (selected) {
+                                        if (selected) {
+                                          widget.ttsController
+                                              .setTargetLoopLimit(limit);
+                                        }
+                                      },
+                                      labelStyle: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : (isDark
+                                                  ? const Color(0xCCFFFFFF)
+                                                  : const Color(0xCC0F172A)),
+                                      ),
+                                      selectedColor: const Color(0xFF6366F1),
+                                      backgroundColor: isDark
+                                          ? const Color(0x1AFFFFFF)
+                                          : const Color(0x0A000000),
+                                      side: BorderSide(
+                                        color: isSelected
+                                            ? const Color(0xFF6366F1)
+                                            : (isDark
+                                                  ? const Color(0x1FFFFFFF)
+                                                  : const Color(0x1F000000)),
+                                      ),
+                                      visualDensity: VisualDensity.compact,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -662,6 +772,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: CircularMediaControls(
                     playbackState: widget.ttsController.playbackState,
                     repeatCount: widget.ttsController.repeatCount,
+                    targetLoopLimit: widget.ttsController.targetLoopLimit,
                     isDark: isDark,
                     onPlay: _handlePlay,
                     onPause: _handlePause,

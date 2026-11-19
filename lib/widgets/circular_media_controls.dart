@@ -12,6 +12,7 @@ class CircularMediaControls extends StatelessWidget {
   final VoidCallback onStop;
   final VoidCallback onResetCounter;
   final int repeatCount;
+  final int targetLoopLimit;
   final bool isDark;
 
   const CircularMediaControls({
@@ -22,6 +23,7 @@ class CircularMediaControls extends StatelessWidget {
     required this.onStop,
     required this.onResetCounter,
     required this.repeatCount,
+    this.targetLoopLimit = 0,
     required this.isDark,
   });
 
@@ -103,19 +105,31 @@ class CircularMediaControls extends StatelessWidget {
 
     if (isPlaying) {
       if (playbackState == PlaybackState.pausingBetweenLoops) {
-        status = "Pausing before loop #${repeatCount + 1}";
+        status = targetLoopLimit > 0
+            ? "Pausing before loop #${repeatCount + 1} of $targetLoopLimit"
+            : "Pausing before loop #${repeatCount + 1}";
         dotColor = LiquidGlassTheme.amber;
       } else {
-        status = "Playing loop #$repeatCount";
+        status = targetLoopLimit > 0
+            ? "Playing loop #${repeatCount + 1} of $targetLoopLimit"
+            : "Playing loop #${repeatCount + 1} (Endless)";
         dotColor = LiquidGlassTheme.emerald;
       }
     } else if (isPaused) {
-      status = "Paused at loop #$repeatCount";
+      status = targetLoopLimit > 0
+          ? "Paused at loop #${repeatCount + 1} of $targetLoopLimit"
+          : "Paused at loop #${repeatCount + 1}";
       dotColor = LiquidGlassTheme.secondary;
     } else {
-      status = repeatCount == 0
-          ? "Ready to repeat"
-          : "Finished • Repeated $repeatCount times";
+      if (repeatCount == 0) {
+        status = targetLoopLimit > 0
+            ? "Ready • Limit: ${targetLoopLimit}x"
+            : "Ready to repeat (Endless)";
+      } else {
+        status = targetLoopLimit > 0 && repeatCount >= targetLoopLimit
+            ? "Completed target $repeatCount repetitions!"
+            : "Finished • Repeated $repeatCount times";
+      }
       dotColor = LiquidGlassTheme.primary;
     }
 

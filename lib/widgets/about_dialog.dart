@@ -54,7 +54,7 @@ class AppAboutDialog extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Text(
-                "Version 1.2.0 (Build 3)",
+                "Version 1.3.0 (Build 4)",
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -82,22 +82,22 @@ class AppAboutDialog extends StatelessWidget {
 
             _buildFeatureRow(
               Icons.repeat_rounded,
-              "Endless Loop with Zero Audio Overlap",
+              "Loop Playback with Target Limits (1x, 3x, 5x, Endless)",
               isDark,
             ),
             _buildFeatureRow(
               Icons.spellcheck_rounded,
-              "Synchronized Word-by-Word Highlighting",
+              "Real-time Word Highlighting & Dynamic Text Sync",
               isDark,
             ),
             _buildFeatureRow(
               Icons.record_voice_over_rounded,
-              "5 Curated Studio & Neural Voices",
+              "5 Curated Voices with Instant 0ms Switching",
               isDark,
             ),
             _buildFeatureRow(
               Icons.save_rounded,
-              "Automatic Local Data Persistence",
+              "Automatic Persistence for Text, Voice & Settings",
               isDark,
             ),
 

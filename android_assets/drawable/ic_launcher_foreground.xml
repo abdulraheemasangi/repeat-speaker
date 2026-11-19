@@ -4,15 +4,36 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Clean Minimal Repeat Icon -->
+    <!-- Balanced Circular Repeat Loop with Tight Symmetrical Spacing -->
     <group
-        android:scaleX="0.65"
-        android:scaleY="0.65"
-        android:translateX="18.9"
-        android:translateY="18.9">
-        <!-- Repeat Arrows Path -->
+        android:scaleX="0.75"
+        android:scaleY="0.75"
+        android:translateX="13.5"
+        android:translateY="13.5">
+        <!-- Top Circular Arc (Curving Clockwise) -->
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="6"
+            android:strokeLineCap="round"
+            android:pathData="M 32,46 A 24,24 0 0,1 74,40" />
+
+        <!-- Top Arrowhead -->
         <path
             android:fillColor="#FFFFFF"
-            android:pathData="M31,34L17,34C13.69,34 11,36.69 11,40L11,62C11,65.31 13.69,68 17,68L23,68L23,62L17,62C15.9,62 15,61.1 15,60L15,42C15,40.9 15.9,40 17,40L31,40L31,46L41,37L31,28L31,34ZM77,74L91,74C94.31,74 97,71.31 97,68L97,46C97,42.69 94.31,40 91,40L85,40L85,46L91,46C92.1,46 93,46.9 93,48L93,66C93,67.1 92.1,68 91,68L77,68L77,62L67,71L77,80L77,74Z"/>
+            android:pathData="M 74,32 L 83,44 L 69,47 Z" />
+
+        <!-- Bottom Circular Arc (Curving Clockwise) -->
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="6"
+            android:strokeLineCap="round"
+            android:pathData="M 76,62 A 24,24 0 0,1 34,68" />
+
+        <!-- Bottom Arrowhead -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 34,76 L 25,64 L 39,61 Z" />
     </group>
 </vector>
